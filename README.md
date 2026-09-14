@@ -50,7 +50,7 @@ Firma de diploma:
   "descripcion": "Firma de diploma digital con QR",
   "documento_identidad_firmante": 10000000,
   "metadatos": {
-    "tercero_id_estudiante": 123456,
+    "codigo_estudiante": 10000000001,
     "programa_academico_id": 85,
     "periodo_id": 20261,
     "vigencia": 2026,
