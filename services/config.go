@@ -1,29 +1,48 @@
 package services
 
 import (
+	"os"
 	"strings"
 
-	"github.com/astaxie/beego"
+	beego "github.com/beego/beego/v2/server/web"
 )
 
+func configString(confKey, envKey string) string {
+	value, _ := beego.AppConfig.String(confKey)
+	value = strings.TrimSpace(value)
+	if value == "" || strings.HasPrefix(value, "${") {
+		value = strings.TrimSpace(os.Getenv(envKey))
+	}
+	return strings.TrimRight(value, "/")
+}
+
 func firmaElectronicaMidURL() string {
-	return strings.TrimRight(beego.AppConfig.String("FirmaElectronicaMidURL"), "/")
+	return configString("FirmaElectronicaMidURL", "FIRMA_ELECTRONICA_MID_URL")
 }
 
 func diplomasCrudURL() string {
-	return strings.TrimRight(beego.AppConfig.String("DiplomasCrudURL"), "/")
+	return configString("DiplomasCrudURL", "DIPLOMAS_CRUD_URL")
 }
 
 func administrativaAmazonAPIURL() string {
-	return strings.TrimRight(beego.AppConfig.String("AdministrativaAmazonAPIURL"), "/")
+	return configString("AdministrativaAmazonAPIURL", "ADMINISTRATIVA_AMAZON_API_URL")
 }
 
 func documentosCrudGestorDocumentalURL() string {
-	return strings.TrimRight(beego.AppConfig.String("DocumentosCrudGestorDocumentalURL"), "/")
+	return configString("DocumentosCrudGestorDocumentalURL", "DOCUMENTOS_CRUD_GESTOR_DOCUMENTAL_URL")
+}
+
+func pazYSalvosCrudURL() string {
+	return configString("PazYSalvosCrudURL", "PAZ_Y_SALVOS_CRUD_URL")
+}
+
+func academicaCoreServiceURL() string {
+	return configString("AcademicaCoreServiceURL", "ACADEMICA_CORE_SERVICE_URL")
 }
 
 func awsRegion() string {
-	value := strings.TrimSpace(beego.AppConfig.String("AWSRegion"))
+	value, _ := beego.AppConfig.String("AWSRegion")
+	value = strings.TrimSpace(value)
 	if value == "" {
 		return "us-east-1"
 	}
@@ -31,17 +50,21 @@ func awsRegion() string {
 }
 
 func awsEndpointURL() string {
-	return strings.TrimSpace(beego.AppConfig.String("AWSEndpointURL"))
+	value, _ := beego.AppConfig.String("AWSEndpointURL")
+	return strings.TrimSpace(value)
 }
 
 func awsAccessKeyID() string {
-	return strings.TrimSpace(beego.AppConfig.String("AWSAccessKeyID"))
+	value, _ := beego.AppConfig.String("AWSAccessKeyID")
+	return strings.TrimSpace(value)
 }
 
 func awsSecretAccessKey() string {
-	return strings.TrimSpace(beego.AppConfig.String("AWSSecretAccessKey"))
+	value, _ := beego.AppConfig.String("AWSSecretAccessKey")
+	return strings.TrimSpace(value)
 }
 
 func diplomasS3Bucket() string {
-	return strings.TrimSpace(beego.AppConfig.String("DiplomasS3Bucket"))
+	value, _ := beego.AppConfig.String("DiplomasS3Bucket")
+	return strings.TrimSpace(value)
 }
