@@ -9,6 +9,8 @@ services:
       DIPLOMAS_CRUD_URL: http://host.docker.internal:8081/v1
       ADMINISTRATIVA_AMAZON_API_URL: http://api.intranetoas.udistrital.edu.co:8104
       DOCUMENTOS_CRUD_GESTOR_DOCUMENTAL_URL: http://api.intranetoas.udistrital.edu.co:8502/v1/gestor_documental
+      PAZ_Y_SALVOS_CRUD_URL: https://pruebasapi.intranetoas.udistrital.edu.co/paz_y_salvos_crud
+      ACADEMICA_CORE_SERVICE_URL: https://pruebasapi2.intranetoas.udistrital.edu.co/academica_core_service/
       AWS_REGION: us-east-1
       AWS_ENDPOINT_URL: http://host.docker.internal:4566
       AWS_ACCESS_KEY_ID: test
