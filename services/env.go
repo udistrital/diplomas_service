@@ -1,0 +1,94 @@
+package services
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
+	beego "github.com/beego/beego/v2/server/web"
+)
+
+func LoadRuntimeConfig() error {
+	if err := loadDotEnv(".env"); err != nil {
+		return fmt.Errorf("load .env: %w", err)
+	}
+	return syncEnvToAppConfig()
+}
+
+func loadDotEnv(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		value = strings.Trim(value, `"'`)
+		if key == "" {
+			continue
+		}
+		if value, exists := os.LookupEnv(key); exists && value != "" {
+			continue
+		}
+
+		_ = os.Setenv(key, value)
+	}
+
+	return scanner.Err()
+}
+
+func syncEnvToAppConfig() error {
+	envToConf := map[string]string{
+		"DIPLOMAS_MID_HTTP_PORT":                "httpport",
+		"DIPLOMAS_MID_RUNMODE":                  "runmode",
+		"FIRMA_ELECTRONICA_MID_URL":             "FirmaElectronicaMidURL",
+		"DIPLOMAS_CRUD_URL":                     "DiplomasCrudURL",
+		"ADMINISTRATIVA_AMAZON_API_URL":         "AdministrativaAmazonAPIURL",
+		"DOCUMENTOS_CRUD_GESTOR_DOCUMENTAL_URL": "DocumentosCrudGestorDocumentalURL",
+		"PAZ_Y_SALVOS_CRUD_URL":                 "PazYSalvosCrudURL",
+		"ACADEMICA_CORE_SERVICE_URL":            "AcademicaCoreServiceURL",
+		"AWS_REGION":                            "AWSRegion",
+		"AWS_ENDPOINT_URL":                      "AWSEndpointURL",
+		"AWS_ACCESS_KEY_ID":                     "AWSAccessKeyID",
+		"AWS_SECRET_ACCESS_KEY":                 "AWSSecretAccessKey",
+		"DIPLOMAS_S3_BUCKET":                    "DiplomasS3Bucket",
+	}
+
+	for envKey, confKey := range envToConf {
+		if value := os.Getenv(envKey); value != "" {
+			_ = beego.AppConfig.Set(confKey, value)
+		}
+	}
+
+	if portValue := os.Getenv("DIPLOMAS_MID_HTTP_PORT"); portValue != "" {
+		port, err := strconv.Atoi(portValue)
+		if err != nil {
+			return fmt.Errorf("invalid DIPLOMAS_MID_HTTP_PORT %q: %w", portValue, err)
+		}
+		beego.BConfig.Listen.HTTPPort = port
+	}
+
+	if runMode := os.Getenv("DIPLOMAS_MID_RUNMODE"); runMode != "" {
+		beego.BConfig.RunMode = runMode
+	}
+
+	return nil
+}

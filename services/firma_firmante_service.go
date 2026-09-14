@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/disintegration/gift"
-	"github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/utils_oas/v2/request"
 )
 
 const (

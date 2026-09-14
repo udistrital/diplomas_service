@@ -1,5 +1,7 @@
 package services
 
+import "time"
+
 type PersonaFirma struct {
 	Nombre         string   `json:"nombre"`
 	Cargo          string   `json:"cargo,omitempty"`
@@ -50,9 +52,57 @@ type actualizarUUIDDocumentoRequest struct {
 	UUIDDocumento string `json:"uuid_documento"`
 }
 
+type crearDocumentoDigitalRequest struct {
+	TipoDocumentoID     int64 `json:"tipo_documento_id"`
+	EstadoDocumentoID   int64 `json:"estado_documento_id"`
+	CodigoEstudiante    int64 `json:"codigo_estudiante"`
+	ProgramaAcademicoID int64 `json:"programa_academico_id"`
+	PeriodoID           int64 `json:"periodo_id"`
+	Vigencia            int   `json:"vigencia"`
+	Activo              bool  `json:"activo"`
+}
+
 type documentoDigitalResponse struct {
-	ID            int64  `json:"id"`
-	UUIDDocumento string `json:"uuid_documento"`
+	ID                  int64   `json:"id"`
+	TipoDocumentoID     int64   `json:"tipo_documento_id"`
+	EstadoDocumentoID   int64   `json:"estado_documento_id"`
+	CodigoEstudiante    int64   `json:"codigo_estudiante"`
+	ProgramaAcademicoID *int64  `json:"programa_academico_id,omitempty"`
+	PeriodoID           *int64  `json:"periodo_id,omitempty"`
+	Vigencia            *int    `json:"vigencia,omitempty"`
+	UUIDDocumento       *string `json:"uuid_documento,omitempty"`
+	Activo              bool    `json:"activo"`
+}
+
+type crearDiplomaDigitalRequest struct {
+	FacultadID              int64     `json:"facultad_id"`
+	Vigencia                int       `json:"vigencia"`
+	FechaGrado              time.Time `json:"fecha_grado"`
+	TituloConferido         string    `json:"titulo_conferido"`
+	NombreGraduando         string    `json:"nombre_graduando"`
+	DocumentoIdentidad      string    `json:"documento_identidad"`
+	TipoDocumento           string    `json:"tipo_documento,omitempty"`
+	MunicipioExpedicion     string    `json:"municipio_expedicion,omitempty"`
+	EstadoDocumentoCreadoID int64     `json:"estado_documento_creado_id"`
+}
+
+type diplomaDigitalResponse struct {
+	ID                  int64                     `json:"id"`
+	DocumentoDigital    *documentoDigitalResponse `json:"documento_digital,omitempty"`
+	FacultadID          int64                     `json:"facultad_id"`
+	Vigencia            int                       `json:"vigencia"`
+	FechaGrado          time.Time                 `json:"fecha_grado"`
+	TituloConferido     string                    `json:"titulo_conferido"`
+	NombreGraduando     string                    `json:"nombre_graduando"`
+	DocumentoIdentidad  string                    `json:"documento_identidad"`
+	TipoDocumento       string                    `json:"tipo_documento,omitempty"`
+	MunicipioExpedicion string                    `json:"municipio_expedicion,omitempty"`
+	ConsecutivoDiploma  int64                     `json:"consecutivo_diploma"`
+	ConsecutivoFacultad int                       `json:"consecutivo_facultad"`
+	Folio               int                       `json:"folio"`
+	Acta                int                       `json:"acta"`
+	Libro               int                       `json:"libro"`
+	Activo              bool                      `json:"activo"`
 }
 
 type S3ObjectRef struct {

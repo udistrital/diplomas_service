@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/utils_oas/v2/request"
 )
 
 type FirmaDiplomaService struct {
