@@ -475,10 +475,10 @@ func construirFirmasTemplateDiploma(firmas []diplomaSignatureRender) []diplomaTe
 		x     float64
 		label string
 	}{
-		{4, 52, "RECTOR"},
-		{3, 142, "SECRETARIO GENERAL"},
-		{2, 232, "DECANO DE LA FACULTAD"},
-		{1, 322, "SECRETARIO ACADEMICO"},
+		{4, 62, "RECTOR"},
+		{3, 154, "SECRETARIO GENERAL"},
+		{2, 246, "DECANO DE LA FACULTAD"},
+		{1, 338, "SECRETARIO ACADEMICO"},
 	}
 	firmasPorOrden := make(map[int]diplomaSignatureRender, len(firmas))
 	for _, firma := range firmas {
@@ -827,10 +827,10 @@ func dibujarFirmasDiplomaPDF(pdf *gofpdf.Fpdf, firmas []diplomaSignatureRender) 
 		x     float64
 		label string
 	}{
-		{4, 52, "RECTOR"},
-		{3, 142, "SECRETARIO GENERAL"},
-		{2, 232, "DECANO DE LA FACULTAD"},
-		{1, 322, "SECRETARIO ACADEMICO"},
+		{4, 62, "RECTOR"},
+		{3, 154, "SECRETARIO GENERAL"},
+		{2, 246, "DECANO DE LA FACULTAD"},
+		{1, 338, "SECRETARIO ACADEMICO"},
 	}
 	firmasPorOrden := make(map[int]diplomaSignatureRender, len(firmas))
 	for _, firma := range firmas {

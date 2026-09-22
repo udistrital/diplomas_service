@@ -36,94 +36,95 @@ body {
 }
 
 .ministry {
-  top: 15mm;
+  top: 16mm;
   font-weight: 700;
-  font-size: 9pt;
+  font-size: 10pt;
   line-height: 1.18;
 }
 
 .escudo {
   position: absolute;
-  left: 177mm;
-  top: 20mm;
-  width: 48mm;
+  left: 175mm;
+  top: 17mm;
+  width: 52mm;
   height: auto;
 }
 
 .university {
-  top: 87mm;
-  font-size: 29pt;
+  top: 89mm;
+  font-size: 32pt;
   font-weight: 900;
   letter-spacing: 0;
   text-shadow: 0.12mm 0 0 #111;
 }
 
 .small {
-  top: 103mm;
-  font-size: 8pt;
+  top: 106mm;
+  font-size: 9pt;
   font-weight: 700;
 }
 
 .title {
-  top: 113mm;
-  padding: 0 35mm;
+  top: 115mm;
+  padding: 0 25mm;
   font-family: EngraversOldEnglish, CambriaLocal, serif;
-  font-size: 21pt;
+  font-size: 24pt;
   font-weight: 700;
   line-height: 1.08;
 }
 
 .a {
-  top: 136mm;
-  font-size: 14pt;
+  top: 132mm;
+  font-size: 15pt;
   font-weight: 700;
 }
 
 .student {
-  top: 151mm;
-  padding: 0 18mm;
+  top: 143mm;
+  padding: 0 15mm;
   font-family: EngraversOldEnglish, CambriaLocal, serif;
-  font-size: 31pt;
+  font-size: 37pt;
   font-weight: 700;
   line-height: 1.04;
 }
 
 .document {
-  top: 174mm;
-  font-size: 7.2pt;
+  top: 165mm;
+  font-size: 8pt;
   font-weight: 700;
   font-style: italic;
 }
 
 .condition {
-  top: 191mm;
-  font-size: 7.2pt;
+  top: 181mm;
+  font-size: 7.5pt;
   font-weight: 700;
 }
 
 .diploma {
-  top: 200mm;
-  font-size: 21pt;
+  top: 191mm;
+  font-size: 23pt;
   font-weight: 900;
   text-shadow: 0.06mm 0 0 #111;
 }
 
 .date {
-  top: 219mm;
-  font-size: 6.8pt;
+  top: 208mm;
+  font-size: 8pt;
   font-weight: 700;
+  font-style: italic;
 }
 
 .signature {
   position: absolute;
-  top: 236mm;
+  top: 224mm;
   width: 60mm;
   text-align: center;
 }
 
 .signature-img {
-  max-width: 42mm;
-  max-height: 15mm;
+  max-width: 50mm;
+  max-height: 20mm;
   display: block;
   margin: 0 auto;
 }
@@ -201,17 +202,18 @@ body {
 
 .registry-line {
   position: absolute;
-  top: 266mm;
-  left: 204mm;
-  width: 118mm;
-  font-size: 6pt;
+  top: 258mm;
+  left: 210mm;
+  width: 105mm;
+  font-size: 7pt;
   text-align: center;
   word-spacing: 1mm;
 }
 
 .number {
-  top: 264mm;
-  font-size: 12pt;
+  top: 256mm;
+  left: 0;
+  font-size: 16pt;
   color: #c91818;
   font-weight: 700;
 }
