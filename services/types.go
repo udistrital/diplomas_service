@@ -8,6 +8,7 @@ type PersonaFirma struct {
 	Oficina        string   `json:"oficina,omitempty"`
 	TipoID         string   `json:"tipoId,omitempty"`
 	Identificacion string   `json:"identificacion,omitempty"`
+	FirmaURL       string   `json:"firma_url,omitempty"`
 	OrdenCampos    []string `json:"orden_campos,omitempty"`
 }
 
@@ -53,56 +54,68 @@ type actualizarUUIDDocumentoRequest struct {
 }
 
 type crearDocumentoDigitalRequest struct {
-	TipoDocumentoID     int64 `json:"tipo_documento_id"`
-	EstadoDocumentoID   int64 `json:"estado_documento_id"`
-	CodigoEstudiante    int64 `json:"codigo_estudiante"`
-	ProgramaAcademicoID int64 `json:"programa_academico_id"`
-	PeriodoID           int64 `json:"periodo_id"`
-	Vigencia            int   `json:"vigencia"`
-	Activo              bool  `json:"activo"`
+	TipoDocumentoDigitalID    int64  `json:"tipo_documento_digital_id"`
+	EstadoDocumentoID         int64  `json:"estado_documento_id"`
+	CodigoEstudiante          int64  `json:"codigo_estudiante"`
+	FacultadID                int64  `json:"facultad_id"`
+	ProgramaAcademicoID       int64  `json:"programa_academico_id"`
+	PeriodoID                 int64  `json:"periodo_id"`
+	Vigencia                  int    `json:"vigencia"`
+	NombreEstudiante          string `json:"nombre_estudiante,omitempty"`
+	TipoDocumentoEstudiante   string `json:"tipo_documento_estudiante,omitempty"`
+	NumeroDocumentoEstudiante string `json:"numero_documento_estudiante,omitempty"`
+	MunicipioExpedicion       string `json:"municipio_expedicion,omitempty"`
+	TituloOtorgado            string `json:"titulo_otorgado,omitempty"`
+	Activo                    bool   `json:"activo"`
 }
 
 type documentoDigitalResponse struct {
-	ID                  int64   `json:"id"`
-	TipoDocumentoID     int64   `json:"tipo_documento_id"`
-	EstadoDocumentoID   int64   `json:"estado_documento_id"`
-	CodigoEstudiante    int64   `json:"codigo_estudiante"`
-	ProgramaAcademicoID *int64  `json:"programa_academico_id,omitempty"`
-	PeriodoID           *int64  `json:"periodo_id,omitempty"`
-	Vigencia            *int    `json:"vigencia,omitempty"`
-	UUIDDocumento       *string `json:"uuid_documento,omitempty"`
-	Activo              bool    `json:"activo"`
+	ID                        int64   `json:"id"`
+	TipoDocumentoDigitalID    int64   `json:"tipo_documento_digital_id"`
+	EstadoDocumentoID         int64   `json:"estado_documento_id"`
+	CodigoEstudiante          int64   `json:"codigo_estudiante"`
+	FacultadID                *int64  `json:"facultad_id,omitempty"`
+	ProgramaAcademicoID       *int64  `json:"programa_academico_id,omitempty"`
+	PeriodoID                 *int64  `json:"periodo_id,omitempty"`
+	Vigencia                  *int    `json:"vigencia,omitempty"`
+	NombreEstudiante          string  `json:"nombre_estudiante,omitempty"`
+	TipoDocumentoEstudiante   string  `json:"tipo_documento_estudiante,omitempty"`
+	NumeroDocumentoEstudiante string  `json:"numero_documento_estudiante,omitempty"`
+	MunicipioExpedicion       string  `json:"municipio_expedicion,omitempty"`
+	TituloOtorgado            string  `json:"titulo_otorgado,omitempty"`
+	UUIDDocumento             *string `json:"uuid_documento,omitempty"`
+	Activo                    bool    `json:"activo"`
 }
 
 type crearDiplomaDigitalRequest struct {
-	FacultadID              int64     `json:"facultad_id"`
-	Vigencia                int       `json:"vigencia"`
-	FechaGrado              time.Time `json:"fecha_grado"`
-	TituloConferido         string    `json:"titulo_conferido"`
-	NombreGraduando         string    `json:"nombre_graduando"`
-	DocumentoIdentidad      string    `json:"documento_identidad"`
-	TipoDocumento           string    `json:"tipo_documento,omitempty"`
-	MunicipioExpedicion     string    `json:"municipio_expedicion,omitempty"`
-	EstadoDocumentoCreadoID int64     `json:"estado_documento_creado_id"`
+	FacultadID                int64     `json:"facultad_id"`
+	Vigencia                  int       `json:"vigencia"`
+	FechaGrado                time.Time `json:"fecha_grado"`
+	NombreEstudiante          string    `json:"nombre_estudiante"`
+	TipoDocumentoEstudiante   string    `json:"tipo_documento_estudiante"`
+	NumeroDocumentoEstudiante string    `json:"numero_documento_estudiante"`
+	MunicipioExpedicion       string    `json:"municipio_expedicion,omitempty"`
+	TituloOtorgado            string    `json:"titulo_otorgado"`
+	EstadoDocumentoCreadoID   int64     `json:"estado_documento_creado_id"`
 }
 
 type diplomaDigitalResponse struct {
-	ID                  int64                     `json:"id"`
-	DocumentoDigital    *documentoDigitalResponse `json:"documento_digital,omitempty"`
-	FacultadID          int64                     `json:"facultad_id"`
-	Vigencia            int                       `json:"vigencia"`
-	FechaGrado          time.Time                 `json:"fecha_grado"`
-	TituloConferido     string                    `json:"titulo_conferido"`
-	NombreGraduando     string                    `json:"nombre_graduando"`
-	DocumentoIdentidad  string                    `json:"documento_identidad"`
-	TipoDocumento       string                    `json:"tipo_documento,omitempty"`
-	MunicipioExpedicion string                    `json:"municipio_expedicion,omitempty"`
-	ConsecutivoDiploma  int64                     `json:"consecutivo_diploma"`
-	ConsecutivoFacultad int                       `json:"consecutivo_facultad"`
-	Folio               int                       `json:"folio"`
-	Acta                int                       `json:"acta"`
-	Libro               int                       `json:"libro"`
-	Activo              bool                      `json:"activo"`
+	ID                        int64                     `json:"id"`
+	DocumentoDigital          *documentoDigitalResponse `json:"documento_digital,omitempty"`
+	FacultadID                int64                     `json:"facultad_id"`
+	Vigencia                  int                       `json:"vigencia"`
+	FechaGrado                time.Time                 `json:"fecha_grado"`
+	NombreEstudiante          string                    `json:"nombre_estudiante"`
+	TipoDocumentoEstudiante   string                    `json:"tipo_documento_estudiante"`
+	NumeroDocumentoEstudiante string                    `json:"numero_documento_estudiante"`
+	MunicipioExpedicion       string                    `json:"municipio_expedicion,omitempty"`
+	TituloOtorgado            string                    `json:"titulo_otorgado"`
+	ConsecutivoDiploma        int64                     `json:"consecutivo_diploma"`
+	ConsecutivoFacultad       int                       `json:"consecutivo_facultad"`
+	Folio                     int                       `json:"folio"`
+	Acta                      int                       `json:"acta"`
+	Libro                     int                       `json:"libro"`
+	Activo                    bool                      `json:"activo"`
 }
 
 type S3ObjectRef struct {
@@ -160,6 +173,7 @@ type SubirFirmaFirmanteResult struct {
 }
 
 type FirmaDiplomaResult struct {
+	Preview               bool                     `json:"preview"`
 	FirmaID               string                   `json:"firma_id"`
 	RepositorioDocumental string                   `json:"repositorio_documental"`
 	DocumentoID           int64                    `json:"documento_id"`
@@ -168,7 +182,26 @@ type FirmaDiplomaResult struct {
 	CodigoAutenticidad    string                   `json:"codigo_autenticidad"`
 	QRURLSegura           string                   `json:"qr_url_segura"`
 	Firmante              FirmanteActivo           `json:"firmante"`
-	S3                    S3ObjectRef              `json:"s3"`
+	S3                    *S3ObjectRef             `json:"s3,omitempty"`
 	DynamoDB              map[string]interface{}   `json:"dynamodb"`
 	DocumentoDigital      documentoDigitalResponse `json:"documento_digital"`
+	FirmaDocumento        *firmaDocumentoResponse  `json:"firma_documento,omitempty"`
+	File                  string                   `json:"file,omitempty"`
+}
+
+type registrarFirmaDocumentoRequest struct {
+	FirmaFirmanteID    *int64 `json:"firma_firmante_id,omitempty"`
+	RolFirmanteID      int64  `json:"rol_firmante_id"`
+	DocumentoIdentidad int64  `json:"documento_identidad"`
+	EstadoFirmadoID    *int64 `json:"estado_firmado_id,omitempty"`
+	Observacion        string `json:"observacion,omitempty"`
+}
+
+type firmaDocumentoResponse struct {
+	ID                 int64                      `json:"id"`
+	DocumentoDigital   *documentoDigitalResponse  `json:"documento_digital,omitempty"`
+	FirmaFirmante      *FirmaFirmanteCRUDResponse `json:"firma_firmante,omitempty"`
+	RolFirmanteID      int64                      `json:"rol_firmante_id"`
+	DocumentoIdentidad int64                      `json:"documento_identidad"`
+	Activo             bool                       `json:"activo"`
 }

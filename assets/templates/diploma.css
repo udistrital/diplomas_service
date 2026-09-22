@@ -1,0 +1,217 @@
+@page {
+  size: 400mm 280mm;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 400mm;
+  height: 280mm;
+  margin: 0;
+  background: white;
+}
+
+body {
+  font-family: CambriaLocal, "Times New Roman", serif;
+  color: #111;
+}
+
+.page {
+  position: relative;
+  width: 400mm;
+  height: 280mm;
+  overflow: hidden;
+  background: #fff;
+}
+
+.center {
+  position: absolute;
+  left: 0;
+  width: 400mm;
+  text-align: center;
+}
+
+.ministry {
+  top: 15mm;
+  font-weight: 700;
+  font-size: 9pt;
+  line-height: 1.18;
+}
+
+.escudo {
+  position: absolute;
+  left: 177mm;
+  top: 20mm;
+  width: 48mm;
+  height: auto;
+}
+
+.university {
+  top: 87mm;
+  font-size: 29pt;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow: 0.12mm 0 0 #111;
+}
+
+.small {
+  top: 103mm;
+  font-size: 8pt;
+  font-weight: 700;
+}
+
+.title {
+  top: 113mm;
+  padding: 0 35mm;
+  font-family: EngraversOldEnglish, CambriaLocal, serif;
+  font-size: 21pt;
+  font-weight: 700;
+  line-height: 1.08;
+}
+
+.a {
+  top: 136mm;
+  font-size: 14pt;
+  font-weight: 700;
+}
+
+.student {
+  top: 151mm;
+  padding: 0 18mm;
+  font-family: EngraversOldEnglish, CambriaLocal, serif;
+  font-size: 31pt;
+  font-weight: 700;
+  line-height: 1.04;
+}
+
+.document {
+  top: 174mm;
+  font-size: 7.2pt;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.condition {
+  top: 191mm;
+  font-size: 7.2pt;
+  font-weight: 700;
+}
+
+.diploma {
+  top: 200mm;
+  font-size: 21pt;
+  font-weight: 900;
+  text-shadow: 0.06mm 0 0 #111;
+}
+
+.date {
+  top: 219mm;
+  font-size: 6.8pt;
+  font-weight: 700;
+}
+
+.signature {
+  position: absolute;
+  top: 236mm;
+  width: 60mm;
+  text-align: center;
+}
+
+.signature-img {
+  max-width: 42mm;
+  max-height: 15mm;
+  display: block;
+  margin: 0 auto;
+}
+
+.signature-line {
+  position: absolute;
+  left: 4mm;
+  right: 4mm;
+  top: 17mm;
+  border-top: 0.25mm solid #222;
+}
+
+.signature-label {
+  position: absolute;
+  top: 21mm;
+  width: 60mm;
+  font-size: 8pt;
+  font-weight: 900;
+  text-shadow: 0.04mm 0 0 #111;
+}
+
+.qr-demo {
+  position: absolute;
+  right: 9.9mm;
+  top: 9.9mm;
+  width: 32mm;
+  height: 32mm;
+  background: #fff;
+  padding: 1mm;
+}
+
+.qr-demo-grid {
+  position: relative;
+  width: 30mm;
+  height: 30mm;
+  background:
+    linear-gradient(90deg, #111 0 10%, transparent 10% 20%, #111 20% 30%, transparent 30% 40%, #111 40% 50%, transparent 50% 60%, #111 60% 70%, transparent 70% 80%, #111 80% 90%, transparent 90%),
+    linear-gradient(#111 0 10%, transparent 10% 20%, #111 20% 30%, transparent 30% 40%, #111 40% 50%, transparent 50% 60%, #111 60% 70%, transparent 70% 80%, #111 80% 90%, transparent 90%);
+  background-blend-mode: multiply;
+  background-size: 6mm 6mm;
+}
+
+.qr-demo-eye {
+  position: absolute;
+  width: 8.3mm;
+  height: 8.3mm;
+  border: 1.8mm solid #111;
+  background: #fff;
+}
+
+.qr-demo-eye::after {
+  content: "";
+  position: absolute;
+  left: 1.7mm;
+  top: 1.7mm;
+  width: 1.5mm;
+  height: 1.5mm;
+  background: #111;
+}
+
+.qr-demo-eye.tl {
+  left: 1.2mm;
+  top: 1.2mm;
+}
+
+.qr-demo-eye.tr {
+  right: 1.2mm;
+  top: 1.2mm;
+}
+
+.qr-demo-eye.bl {
+  left: 1.2mm;
+  bottom: 1.2mm;
+}
+
+.registry-line {
+  position: absolute;
+  top: 266mm;
+  left: 204mm;
+  width: 118mm;
+  font-size: 6pt;
+  text-align: center;
+  word-spacing: 1mm;
+}
+
+.number {
+  top: 264mm;
+  font-size: 12pt;
+  color: #c91818;
+  font-weight: 700;
+}

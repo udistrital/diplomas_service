@@ -1,6 +1,9 @@
 package services
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 func TestAgruparEstudiantesAprobadosPorFacultad(t *testing.T) {
 	t.Parallel()
@@ -40,6 +43,9 @@ func TestEstudianteAprobadoGradoDocumentoDigitalRequest(t *testing.T) {
 	if result.CodigoEstudiante != 10000000001 {
 		t.Fatalf("expected codigo_estudiante, got %d", result.CodigoEstudiante)
 	}
+	if result.TipoDocumentoDigitalID != 38 {
+		t.Fatalf("expected tipo_documento_digital_id, got %d", result.TipoDocumentoDigitalID)
+	}
 	if result.ProgramaAcademicoID != 73 {
 		t.Fatalf("expected programa_academico_id from IdProyectoOikos, got %d", result.ProgramaAcademicoID)
 	}
@@ -70,5 +76,41 @@ func TestFiltrarEstudiantesAprobadosPorCodigo(t *testing.T) {
 	}
 	if result[0].CodigoEstudiante != 10000000004 {
 		t.Fatalf("expected codigo 10000000004, got %d", result[0].CodigoEstudiante)
+	}
+}
+
+func TestParseParametroResponse(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		raw  string
+	}{
+		{
+			name: "wrapped data",
+			raw:  `{"Data":[{"Id":7311,"CodigoAbreviacion":"DIP_NORMAL","Activo":true}]}`,
+		},
+		{
+			name: "direct array",
+			raw:  `[{"id":7313,"codigo_abreviacion":"PEND_GEN","activo":true}]`,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := parseParametroResponse(json.RawMessage(test.raw))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(result) != 1 {
+				t.Fatalf("expected one parametro, got %d", len(result))
+			}
+			if result[0].ID == 0 || result[0].CodigoAbreviacion == "" || !result[0].Activo {
+				t.Fatalf("unexpected parametro: %#v", result[0])
+			}
+		})
 	}
 }

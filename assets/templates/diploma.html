@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="file://{{.CSSPath}}">
+  <style>
+    @font-face { font-family: CambriaLocal; src: url("file://{{.CambriaPath}}"); font-weight: 400; }
+    @font-face { font-family: CambriaLocal; src: url("file://{{.CambriaBoldPath}}"); font-weight: 700; }
+    @font-face { font-family: EngraversOldEnglish; src: url("file://{{.EngraversPath}}"); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    {{if .MostrarQRDemo}}
+    <div class="qr-demo" aria-hidden="true">
+      <div class="qr-demo-grid">
+        <div class="qr-demo-eye tl"></div>
+        <div class="qr-demo-eye tr"></div>
+        <div class="qr-demo-eye bl"></div>
+      </div>
+    </div>
+    {{end}}
+
+    <div class="center ministry">REPUBLICA DE COLOMBIA<br>MINISTERIO DE EDUCACION NACIONAL Y EN SU NOMBRE</div>
+    <img class="escudo" src="{{.EscudoSrc}}">
+    <div class="center university">LA UNIVERSIDAD DISTRITAL FRANCISCO JOSE DE CALDAS</div>
+    <div class="center small">CONFIERE EL TITULO DE</div>
+    <div class="center title">{{.Titulo}}</div>
+    <div class="center a">A</div>
+    <div class="center student">{{.NombreEstudiante}}</div>
+    <div class="center document">Con C.C. No. {{.Documento}}</div>
+    <div class="center condition">QUIEN CUMPLIO CON LAS CONDICIONES ACADEMICAS REQUERIDAS. EN TESTIMONIO DE ELLO OTORGA EL PRESENTE</div>
+    <div class="center diploma">DIPLOMA</div>
+    <div class="center date">{{.FechaCeremonia}}</div>
+
+    {{range .Firmas}}
+    <div class="signature" style="left: {{.Left}};">
+      {{if .Imagen}}<img class="signature-img" src="{{.Imagen}}">{{end}}
+      <div class="signature-line"></div>
+      <div class="signature-label">{{.Label}}</div>
+    </div>
+    {{end}}
+
+    <div class="registry-line">{{.RegistroLinea}}</div>
+    <div class="center number">No. {{.NumeroDiploma}}</div>
+  </div>
+</body>
+</html>

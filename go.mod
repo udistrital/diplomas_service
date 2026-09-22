@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.91.0
 	github.com/beego/beego/v2 v2.3.10
 	github.com/disintegration/gift v1.2.1
+	github.com/phpdave11/gofpdf v1.4.3
 	github.com/udistrital/utils_oas/v2 v2.0.0-beta.6
 )
 

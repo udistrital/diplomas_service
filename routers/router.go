@@ -9,6 +9,7 @@ import (
 func init() {
 	api := beego.NewNamespace("/v1",
 		beego.NSNamespace("/documento_digital",
+			beego.NSRouter("/:id/diploma/preview", &controllers.DiplomaPreviewController{}, "get:Generar"),
 			beego.NSRouter("/:id/firmar", &controllers.FirmaDiplomaController{}, "post:Firmar"),
 		),
 		beego.NSNamespace("/diplomas",

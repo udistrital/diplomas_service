@@ -50,6 +50,9 @@ func mapServiceError(err error) int {
 	if errors.Is(err, services.ErrInvalidInput) {
 		return http.StatusBadRequest
 	}
+	if errors.Is(err, services.ErrInvalidState) {
+		return http.StatusConflict
+	}
 	if errors.Is(err, services.ErrNoActiveRole) {
 		return http.StatusForbidden
 	}
