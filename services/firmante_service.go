@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -86,15 +87,51 @@ func (s FirmanteService) ConsultarRolActivo(ctx context.Context, documentoIdenti
 		if cargo == "" {
 			cargo = supervisor.CargoID.Cargo
 		}
-		return &FirmanteActivo{
+		firmante := &FirmanteActivo{
 			Rol:                rol.Codigo,
 			Orden:              rol.Orden,
 			CargoID:            cargoID,
 			Cargo:              cargo,
 			Nombre:             supervisor.Nombre,
 			DocumentoIdentidad: supervisor.Documento,
-		}, nil
+			Dependencia:        supervisor.DependenciaSupervisor,
+		}
+
+		firma, err := s.consultarFirmaActiva(ctx, supervisor.Documento)
+		if err == nil && firma != nil {
+			firmante.EnlaceFirma = firma.EnlaceFirma
+			firmante.FirmaFirmante = firma
+			if firmaImagen, err := consultarFirmaGraficaFirmante(ctx, supervisor.Documento); err == nil {
+				firmante.FirmaImagen = firmaImagen
+			}
+		}
+
+		return firmante, nil
 	}
 
 	return nil, ErrNoActiveRole
+}
+
+func (s FirmanteService) consultarFirmaActiva(ctx context.Context, documentoIdentidad int64) (*FirmaFirmanteCRUDResponse, error) {
+	query := fmt.Sprintf("documento_identidad:%d,activo:true", documentoIdentidad)
+	endpoint := fmt.Sprintf("%s/firma_firmante/?query=%s", diplomasCrudURL(), url.QueryEscape(query))
+
+	var firmas []FirmaFirmanteCRUDResponse
+	status, err := request.GetWithContext(ctx, endpoint, &firmas)
+	if err != nil {
+		return nil, fmt.Errorf("diplomas_crud firma_firmante status %d: %w", status, err)
+	}
+	if status == 404 {
+		return nil, nil
+	}
+	if status < 200 || status >= 300 {
+		return nil, fmt.Errorf("diplomas_crud firma_firmante returned status %d", status)
+	}
+	if len(firmas) == 0 {
+		return nil, nil
+	}
+	if firmas[0].EnlaceFirma == "" {
+		return nil, errors.New("firma_firmante sin enlace_firma")
+	}
+	return &firmas[0], nil
 }

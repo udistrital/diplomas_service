@@ -50,7 +50,7 @@ type DiplomaPreviewMetadatos struct {
 	DiplomaID               int64  `json:"diploma_id,omitempty"`
 	Libro                   int    `json:"libro,omitempty"`
 	Folio                   int    `json:"folio,omitempty"`
-	Acta                    int    `json:"acta,omitempty"`
+	NumeroRegistro          int    `json:"numero_registro,omitempty"`
 	Facultad                string `json:"facultad"`
 }
 
@@ -266,9 +266,15 @@ func construirMetadatosDiplomaPreview(documento *documentoDigitalResponse, diplo
 		metadatos.NumeroDocumento = defaultString(diploma.NumeroDocumentoEstudiante, metadatos.NumeroDocumento)
 		metadatos.LugarExpedicion = defaultString(diploma.MunicipioExpedicion, metadatos.LugarExpedicion)
 		metadatos.FechaCeremonia = fechaCeremoniaBogota(diploma.FechaGrado)
-		metadatos.Libro = diploma.Libro
-		metadatos.Folio = diploma.Folio
-		metadatos.Acta = diploma.Acta
+		if diploma.RegistroGrado != nil {
+			metadatos.NumeroRegistro = diploma.RegistroGrado.NumeroRegistro
+			if diploma.RegistroGrado.FolioRegistro != nil {
+				metadatos.Folio = diploma.RegistroGrado.FolioRegistro.NumeroFolio
+				if diploma.RegistroGrado.FolioRegistro.LibroRegistro != nil {
+					metadatos.Libro = diploma.RegistroGrado.FolioRegistro.LibroRegistro.NumeroLibro
+				}
+			}
+		}
 		metadatos.Facultad = facultadTexto(&diploma.FacultadID)
 	}
 	if metadatos.FechaCeremonia == "" {
@@ -419,7 +425,7 @@ func lineaRegistroDiploma(m DiplomaPreviewMetadatos) string {
 	return fmt.Sprintf(
 		"Registro No. %s %s Folio No. %s Libro No. %s",
 		siglaFacultadRegistro(m.Facultad),
-		valorInt(m.Acta),
+		valorInt(m.NumeroRegistro),
 		valorFolioDiploma(m.Folio),
 		valorInt(m.Libro),
 	)
@@ -681,7 +687,7 @@ func construirPDFDiplomaPreviewGofpdf(m DiplomaPreviewMetadatos, firmas []diplom
 	dibujarQRDemoGofpdf(pdf, 15, 254, 8)
 	dibujarCodigoBarrasDemoGofpdf(pdf, 190, 253, 28, 7)
 	pdfTextCenterMM(pdf, "Cambria", "", 6, 255, fmt.Sprintf("No. %s", valorInt64(m.DiplomaID)))
-	pdfTextCenterMM(pdf, "Cambria", "", 5.8, 247, fmt.Sprintf("Registro No. %s", valorInt(m.Acta)))
+	pdfTextCenterMM(pdf, "Cambria", "", 5.8, 247, fmt.Sprintf("Registro No. %s", valorInt(m.NumeroRegistro)))
 	pdfTextCenterMM(pdf, "Cambria", "", 5.8, 271, fmt.Sprintf("Folio No. %s", valorInt(m.Folio)))
 	pdfTextCenterMM(pdf, "Cambria", "", 5.8, 295, fmt.Sprintf("Libro No. %s", valorInt(m.Libro)))
 	pdfTextCenterFitMM(pdf, "Cambria", "", 5, 4.5, 267, 105, m.Facultad)

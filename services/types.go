@@ -111,11 +111,26 @@ type diplomaDigitalResponse struct {
 	MunicipioExpedicion       string                    `json:"municipio_expedicion,omitempty"`
 	TituloOtorgado            string                    `json:"titulo_otorgado"`
 	ConsecutivoDiploma        int64                     `json:"consecutivo_diploma"`
-	ConsecutivoFacultad       int                       `json:"consecutivo_facultad"`
-	Folio                     int                       `json:"folio"`
-	Acta                      int                       `json:"acta"`
-	Libro                     int                       `json:"libro"`
+	ConsecutivoFacultad       *int                      `json:"consecutivo_facultad,omitempty"`
+	RegistroGrado             *registroGradoResponse    `json:"registro_grado,omitempty"`
 	Activo                    bool                      `json:"activo"`
+}
+
+type libroRegistroResponse struct {
+	ID          int64 `json:"id"`
+	NumeroLibro int   `json:"numero_libro"`
+}
+
+type folioRegistroResponse struct {
+	ID            int64                  `json:"id"`
+	LibroRegistro *libroRegistroResponse `json:"libro_registro,omitempty"`
+	NumeroFolio   int                    `json:"numero_folio"`
+}
+
+type registroGradoResponse struct {
+	ID             int64                  `json:"id"`
+	FolioRegistro  *folioRegistroResponse `json:"folio_registro,omitempty"`
+	NumeroRegistro int                    `json:"numero_registro"`
 }
 
 type S3ObjectRef struct {
@@ -127,12 +142,17 @@ type S3ObjectRef struct {
 }
 
 type FirmanteActivo struct {
-	Rol                string `json:"rol"`
-	Orden              int    `json:"orden"`
-	CargoID            int    `json:"cargo_id"`
-	Cargo              string `json:"cargo"`
-	Nombre             string `json:"nombre"`
-	DocumentoIdentidad int64  `json:"documento_identidad"`
+	Rol                string                     `json:"rol"`
+	Orden              int                        `json:"orden"`
+	CargoID            int                        `json:"cargo_id"`
+	Cargo              string                     `json:"cargo"`
+	Nombre             string                     `json:"nombre"`
+	DocumentoIdentidad int64                      `json:"documento_identidad"`
+	Dependencia        string                     `json:"dependencia,omitempty"`
+	FacultadID         int64                      `json:"facultad_id,omitempty"`
+	EnlaceFirma        string                     `json:"enlace_firma,omitempty"`
+	FirmaImagen        string                     `json:"firma_imagen,omitempty"`
+	FirmaFirmante      *FirmaFirmanteCRUDResponse `json:"firma_firmante,omitempty"`
 }
 
 type SubirFirmaFirmanteInput struct {
@@ -204,4 +224,171 @@ type firmaDocumentoResponse struct {
 	RolFirmanteID      int64                      `json:"rol_firmante_id"`
 	DocumentoIdentidad int64                      `json:"documento_identidad"`
 	Activo             bool                       `json:"activo"`
+}
+
+type ListarCeremoniasInput struct {
+	DocumentoIdentidadSecretario int64 `json:"documento_identidad_secretario"`
+}
+
+type ActualizarCeremoniaInput struct {
+	FechaCeremonia                string `json:"fecha_ceremonia"`
+	Lugar                         string `json:"lugar"`
+	CantidadEstudiantesProgramada int    `json:"cantidad_estudiantes_programada"`
+	Observacion                   string `json:"observacion,omitempty"`
+	DocumentoIdentidadSecretario  int64  `json:"documento_identidad_secretario"`
+}
+
+type EliminarCeremoniaInput struct {
+	DocumentoIdentidadSecretario int64 `json:"documento_identidad_secretario"`
+}
+
+type CeremoniaResumen struct {
+	ID                            int64  `json:"id"`
+	RelacionID                    int64  `json:"relacion_id"`
+	FacultadID                    int64  `json:"facultad_id"`
+	FechaCeremonia                string `json:"fecha_ceremonia"`
+	Lugar                         string `json:"lugar"`
+	CantidadEstudiantesProgramada int    `json:"cantidad_estudiantes_programada"`
+	CuposAsignados                int    `json:"cupos_asignados"`
+	CuposDisponibles              int    `json:"cupos_disponibles"`
+	EstadoFlujo                   string `json:"estado_flujo"`
+	PuedeEditar                   bool   `json:"puede_editar"`
+	PuedeEliminar                 bool   `json:"puede_eliminar"`
+	MotivoBloqueo                 string `json:"motivo_bloqueo,omitempty"`
+	Observacion                   string `json:"observacion,omitempty"`
+	Activo                        bool   `json:"activo"`
+}
+
+type ProgramaAprobadoResumen struct {
+	ProgramaAcademicoID int64  `json:"programa_academico_id"`
+	Nombre              string `json:"nombre"`
+	Cantidad            int    `json:"cantidad"`
+	CeremoniaID         int64  `json:"ceremonia_id,omitempty"`
+	RelacionID          int64  `json:"relacion_id,omitempty"`
+	Lugar               string `json:"lugar,omitempty"`
+	FechaCeremonia      string `json:"fecha_ceremonia,omitempty"`
+	EstadoFlujo         string `json:"estado_flujo,omitempty"`
+	PuedeReasignar      bool   `json:"puede_reasignar"`
+	MotivoBloqueo       string `json:"motivo_bloqueo,omitempty"`
+}
+
+type TableroCeremoniasResult struct {
+	FacultadID          int64                     `json:"facultad_id"`
+	TotalCeremonias     int                       `json:"total_ceremonias"`
+	TotalCupos          int                       `json:"total_cupos"`
+	CuposAsignados      int                       `json:"cupos_asignados"`
+	CuposDisponibles    int                       `json:"cupos_disponibles"`
+	Ceremonias          []CeremoniaResumen        `json:"ceremonias"`
+	AprobadosTotal      int                       `json:"aprobados_total"`
+	AprobadosProgramas  []ProgramaAprobadoResumen `json:"aprobados_programas"`
+	PendientesProgramas []ProgramaAprobadoResumen `json:"pendientes_programas"`
+	AsignadosProgramas  []ProgramaAprobadoResumen `json:"asignados_programas"`
+}
+
+type AsignarEstudiantesCeremoniaInput struct {
+	DocumentoIdentidadSecretario int64                          `json:"documento_identidad_secretario"`
+	Programas                    []AsignarProgramaCeremoniaItem `json:"programas"`
+}
+
+type AsignarProgramaCeremoniaItem struct {
+	ProgramaAcademicoID int64 `json:"programa_academico_id"`
+	Cantidad            int   `json:"cantidad,omitempty"`
+}
+
+type AsignarEstudiantesCeremoniaResult struct {
+	CeremoniaID int64 `json:"ceremonia_id"`
+	Asignados   int   `json:"asignados"`
+	Omitidos    int   `json:"omitidos"`
+	Errores     int   `json:"errores"`
+}
+
+type ceremoniaEstudianteCRUDRequest struct {
+	CeremoniaFacultadPrograma ceremoniaFacultadProgramaRef `json:"ceremonia_facultad_programa"`
+	DocumentoDigital          documentoDigitalRef          `json:"documento_digital"`
+	Activo                    bool                         `json:"activo"`
+}
+
+type ceremoniaFacultadProgramaRef struct {
+	ID int64 `json:"id"`
+}
+
+type documentoDigitalRef struct {
+	ID int64 `json:"id"`
+}
+
+type ceremoniaEstudianteCRUDResponse struct {
+	ID                        int64                                  `json:"id"`
+	CeremoniaFacultadPrograma *ceremoniaFacultadProgramaCRUDResponse `json:"ceremonia_facultad_programa,omitempty"`
+	DocumentoDigital          *documentoDigitalResponse              `json:"documento_digital,omitempty"`
+	Activo                    bool                                   `json:"activo"`
+}
+
+type QuitarProgramaCeremoniaInput struct {
+	DocumentoIdentidadSecretario int64 `json:"documento_identidad_secretario"`
+	ProgramaAcademicoID          int64 `json:"programa_academico_id"`
+}
+
+type EstudiantesProgramaCeremoniaInput struct {
+	DocumentoIdentidadSecretario int64 `json:"documento_identidad_secretario"`
+	ProgramaAcademicoID          int64 `json:"programa_academico_id"`
+}
+
+type EstudiantesProgramaCeremoniaResult struct {
+	ProgramaAcademicoID int64                     `json:"programa_academico_id"`
+	Nombre              string                    `json:"nombre"`
+	Total               int                       `json:"total"`
+	Estudiantes         []EstudianteAprobadoGrado `json:"estudiantes"`
+}
+
+type CrearCeremoniaInput struct {
+	FechaCeremonia                string `json:"fecha_ceremonia"`
+	Lugar                         string `json:"lugar"`
+	CantidadEstudiantesProgramada int    `json:"cantidad_estudiantes_programada"`
+	Observacion                   string `json:"observacion,omitempty"`
+	DocumentoIdentidadSecretario  int64  `json:"documento_identidad_secretario"`
+}
+
+type CrearCeremoniaResult struct {
+	Ceremonia           ceremoniaGradoCRUDResponse              `json:"ceremonia"`
+	Facultad            ceremoniaFacultadProgramaCRUDResponse   `json:"facultad"`
+	SecretarioAcademico FirmanteActivo                          `json:"secretario_academico"`
+	FacultadesProgramas []ceremoniaFacultadProgramaCRUDResponse `json:"facultades_programas,omitempty"`
+}
+
+type ceremoniaGradoCRUDRequest struct {
+	FechaCeremonia                string `json:"fecha_ceremonia"`
+	Lugar                         string `json:"lugar"`
+	CantidadEstudiantesProgramada int    `json:"cantidad_estudiantes_programada"`
+	Observacion                   string `json:"observacion,omitempty"`
+	Activo                        bool   `json:"activo"`
+}
+
+type ceremoniaGradoCRUDResponse struct {
+	ID                            int64  `json:"id"`
+	FechaCeremonia                string `json:"fecha_ceremonia"`
+	Lugar                         string `json:"lugar"`
+	CantidadEstudiantesProgramada int    `json:"cantidad_estudiantes_programada"`
+	Observacion                   string `json:"observacion,omitempty"`
+	Activo                        bool   `json:"activo"`
+}
+
+type ceremoniaRef struct {
+	ID int64 `json:"id"`
+}
+
+type ceremoniaFacultadProgramaCRUDRequest struct {
+	CeremoniaGrado                ceremoniaRef `json:"ceremonia_grado"`
+	FacultadID                    int64        `json:"facultad_id"`
+	ProgramaAcademicoID           int64        `json:"programa_academico_id"`
+	CantidadEstudiantesProgramada *int         `json:"cantidad_estudiantes_programada,omitempty"`
+	Activo                        bool         `json:"activo"`
+}
+
+type ceremoniaFacultadProgramaCRUDResponse struct {
+	ID                            int64                       `json:"id"`
+	CeremoniaGrado                *ceremoniaGradoCRUDResponse `json:"ceremonia_grado,omitempty"`
+	FacultadID                    int64                       `json:"facultad_id"`
+	ProgramaAcademicoID           int64                       `json:"programa_academico_id"`
+	CantidadEstudiantesProgramada *int                        `json:"cantidad_estudiantes_programada,omitempty"`
+	Activo                        bool                        `json:"activo"`
 }

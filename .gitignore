@@ -6,7 +6,7 @@
 *.dylib
 *.test
 main
-diplomas_mid
+diplomas_service
 
 # Test and coverage artifacts
 *.out

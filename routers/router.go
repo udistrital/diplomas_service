@@ -20,6 +20,13 @@ func init() {
 			beego.NSRouter("/rol-activo", &controllers.FirmanteController{}, "get:RolActivo"),
 			beego.NSRouter("/firma", &controllers.FirmaFirmanteController{}, "post:SubirFirma"),
 		),
+		beego.NSNamespace("/ceremonias",
+			beego.NSRouter("/", &controllers.CeremoniaController{}, "get:Listar;post:Crear"),
+			beego.NSRouter("/programas/:programa_id/estudiantes", &controllers.CeremoniaController{}, "get:EstudiantesPrograma"),
+			beego.NSRouter("/:id/asignar", &controllers.CeremoniaController{}, "post:Asignar"),
+			beego.NSRouter("/:id/programa", &controllers.CeremoniaController{}, "delete:QuitarPrograma"),
+			beego.NSRouter("/:id", &controllers.CeremoniaController{}, "put:Actualizar;delete:Eliminar"),
+		),
 	)
 
 	beego.AddNamespace(api)

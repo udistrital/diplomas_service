@@ -41,7 +41,7 @@ func TestConstruirHTMLDiplomaPreviewUsaTemplate(t *testing.T) {
 		LugarExpedicion:         "BOGOTA D.C.",
 		FechaCeremonia:          "En la ciudad de Bogota a los 16 dias del mes de diciembre de 2026",
 		DiplomaID:               1,
-		Acta:                    8723,
+		NumeroRegistro:          8723,
 		Folio:                   10,
 		Libro:                   1,
 		Facultad:                "FACULTAD DE MEDIO AMBIENTE",

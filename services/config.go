@@ -57,6 +57,33 @@ func parametrosCrudURL() string {
 	return configString("ParametrosCrudURL", "PARAMETROS_CRUD_URL")
 }
 
+func academicaPruebasAPIURL() string {
+	value := configString("AcademicaPruebasAPIURL", "ACADEMICA_PRUEBAS_API_URL")
+	if value == "" {
+		value = configString("FacultadSecretariaURL", "FACULTAD_SECRETARIA_URL")
+		value = strings.TrimSuffix(value, "/facultad_secretaria")
+	}
+	return value
+}
+
+func homologacionDependenciasAPIURL() string {
+	value := configString("HomologacionDependenciasAPIURL", "HOMOLOGACION_DEPENDENCIAS_API_URL")
+	if value == "" {
+		value = configString("FacultadOikosGedepURL", "FACULTAD_OIKOS_GEDEP_URL")
+		value = strings.TrimSuffix(value, "/facultad_oikos_gedep")
+	}
+	return value
+}
+
+func oikosAPIURL() string {
+	value := configString("OikosAPIURL", "OIKOS_API_URL")
+	if value == "" {
+		value = configString("OikosDependenciaURL", "OIKOS_DEPENDENCIA_URL")
+		value = strings.TrimSuffix(value, "/dependencia")
+	}
+	return value
+}
+
 func diplomaPreviewQRDemoURL() string {
 	return configString("DiplomaPreviewQRDemoURL", "DIPLOMA_PREVIEW_QR_DEMO_URL")
 }

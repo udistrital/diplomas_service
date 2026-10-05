@@ -456,7 +456,7 @@ func enriquecerEstudianteAprobado(ctx context.Context, estudiante EstudianteApro
 }
 
 func consultarDatosDiplomaEstudiante(ctx context.Context, codigoEstudiante int64) (*DatosDiplomaEstudiante, error) {
-	endpoint := fmt.Sprintf("%s/v1/estudiantes/datos-diploma/%d", academicaCoreServiceURL(), codigoEstudiante)
+	endpoint := fmt.Sprintf("%s/v1/estudiantes/datos-diploma/%d", strings.TrimRight(academicaCoreServiceURL(), "/"), codigoEstudiante)
 
 	var datos DatosDiplomaEstudiante
 	status, err := request.GetWithContext(ctx, endpoint, &datos)
