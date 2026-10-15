@@ -40,7 +40,7 @@ func nombreDependenciaOikos(ctx context.Context, id int64) string {
 	if baseURL == "" {
 		return ""
 	}
-	endpoint := strings.TrimRight(baseURL, "/") + "/dependencia/" + url.PathEscape(strconv.FormatInt(id, 10))
+	endpoint := strings.TrimRight(strings.TrimSuffix(strings.TrimRight(baseURL, "/"), "/v1"), "/") + "/v1/dependencia/" + url.PathEscape(strconv.FormatInt(id, 10))
 	var response dependenciaOikosResponse
 	if err := getJSON(ctx, endpoint, &response); err != nil {
 		return ""

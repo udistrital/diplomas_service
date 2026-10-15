@@ -22,6 +22,16 @@ type FirmaDiplomaInput struct {
 	File                       string                 `json:"file"`
 }
 
+type AnularFirmaDiplomaInput struct {
+	DocumentoIdentidadFirmante int64 `json:"documento_identidad_firmante"`
+}
+
+type AnularFirmaDiplomaResult struct {
+	DocumentoID int64 `json:"documento_id"`
+	Orden       int   `json:"orden"`
+	Anuladas    int   `json:"anuladas"`
+}
+
 type firmaElectronicaRequest struct {
 	RepositorioDocumental string                 `json:"repositorio_documental"`
 	DocumentoID           int64                  `json:"documento_id"`
@@ -67,6 +77,30 @@ type crearDocumentoDigitalRequest struct {
 	MunicipioExpedicion       string `json:"municipio_expedicion,omitempty"`
 	TituloOtorgado            string `json:"titulo_otorgado,omitempty"`
 	Activo                    bool   `json:"activo"`
+}
+
+type ParametrizacionRegistroInput struct {
+	DocumentoIdentidadSecretario int64 `json:"documento_identidad_secretario"`
+	Vigencia                     int   `json:"vigencia"`
+	LibroInicial                 int   `json:"libro_inicial"`
+	FolioInicial                 int   `json:"folio_inicial"`
+	RegistroInicial              int   `json:"registro_inicial"`
+	ConsecutivoFacultadInicial   int   `json:"consecutivo_facultad_inicial"`
+	FoliosPorLibro               int   `json:"folios_por_libro"`
+	RegistrosPorFolio            int   `json:"registros_por_folio"`
+}
+
+type ParametrizacionRegistroResponse struct {
+	ID                         int64 `json:"id"`
+	FacultadID                 int64 `json:"facultad_id"`
+	Vigencia                   int   `json:"vigencia"`
+	LibroInicial               int   `json:"libro_inicial"`
+	FolioInicial               int   `json:"folio_inicial"`
+	RegistroInicial            int   `json:"registro_inicial"`
+	ConsecutivoFacultadInicial int   `json:"consecutivo_facultad_inicial"`
+	FoliosPorLibro             int   `json:"folios_por_libro"`
+	RegistrosPorFolio          int   `json:"registros_por_folio"`
+	Activo                     bool  `json:"activo"`
 }
 
 type documentoDigitalResponse struct {
@@ -228,6 +262,7 @@ type firmaDocumentoResponse struct {
 
 type ListarCeremoniasInput struct {
 	DocumentoIdentidadSecretario int64 `json:"documento_identidad_secretario"`
+	DocumentoIdentidadFirmante   int64 `json:"documento_identidad_firmante,omitempty"`
 }
 
 type ActualizarCeremoniaInput struct {
@@ -283,6 +318,56 @@ type TableroCeremoniasResult struct {
 	AprobadosProgramas  []ProgramaAprobadoResumen `json:"aprobados_programas"`
 	PendientesProgramas []ProgramaAprobadoResumen `json:"pendientes_programas"`
 	AsignadosProgramas  []ProgramaAprobadoResumen `json:"asignados_programas"`
+}
+
+type CeremoniaFirmaEstudianteResumen struct {
+	AsignacionID              int64  `json:"asignacion_id"`
+	DocumentoDigitalID        int64  `json:"documento_digital_id"`
+	CodigoEstudiante          int64  `json:"codigo_estudiante"`
+	ProgramaAcademicoID       int64  `json:"programa_academico_id,omitempty"`
+	Programa                  string `json:"programa,omitempty"`
+	NombreEstudiante          string `json:"nombre_estudiante,omitempty"`
+	TipoDocumentoEstudiante   string `json:"tipo_documento_estudiante,omitempty"`
+	NumeroDocumentoEstudiante string `json:"numero_documento_estudiante,omitempty"`
+	TituloOtorgado            string `json:"titulo_otorgado,omitempty"`
+	EstadoDocumentoID         int64  `json:"estado_documento_id"`
+	FirmaSecretario           bool   `json:"firma_secretario"`
+	FirmaDecano               bool   `json:"firma_decano"`
+	FirmaSecretariaGeneral    bool   `json:"firma_secretaria_general"`
+	FirmaRector               bool   `json:"firma_rector"`
+	PuedeFirmar               bool   `json:"puede_firmar"`
+	MotivoBloqueo             string `json:"motivo_bloqueo,omitempty"`
+}
+
+type CeremoniaFirmasResult struct {
+	Ceremonia   CeremoniaResumen                  `json:"ceremonia"`
+	Total       int                               `json:"total"`
+	Firmados    int                               `json:"firmados"`
+	Pendientes  int                               `json:"pendientes"`
+	Estudiantes []CeremoniaFirmaEstudianteResumen `json:"estudiantes"`
+}
+
+type FirmaMasivaCeremoniaInput struct {
+	DocumentoIdentidadSecretario int64   `json:"documento_identidad_secretario"`
+	DocumentoIdentidadFirmante   int64   `json:"documento_identidad_firmante,omitempty"`
+	DocumentoDigitalIDs          []int64 `json:"documento_digital_ids,omitempty"`
+}
+
+type FirmaMasivaCeremoniaItem struct {
+	DocumentoDigitalID int64               `json:"documento_digital_id"`
+	Firmado            bool                `json:"firmado"`
+	Error              string              `json:"error,omitempty"`
+	Result             *FirmaDiplomaResult `json:"result,omitempty"`
+}
+
+type FirmaMasivaCeremoniaResult struct {
+	CeremoniaID int64                      `json:"ceremonia_id"`
+	Total       int                        `json:"total"`
+	Firmados    int                        `json:"firmados"`
+	Omitidos    int                        `json:"omitidos"`
+	Errores     int                        `json:"errores"`
+	Message     string                     `json:"message,omitempty"`
+	Resultados  []FirmaMasivaCeremoniaItem `json:"resultados"`
 }
 
 type AsignarEstudiantesCeremoniaInput struct {

@@ -662,7 +662,7 @@ func crearDocumentoDigital(ctx context.Context, payload crearDocumentoDigitalReq
 }
 
 func buscarDiplomaDigitalExistente(ctx context.Context, documentoDigitalID int64) (*diplomaDigitalResponse, error) {
-	rawQuery := fmt.Sprintf("documento_digital_id:%d,activo:true", documentoDigitalID)
+	rawQuery := fmt.Sprintf("documento_digital_id:%d", documentoDigitalID)
 	endpoint := fmt.Sprintf("%s/diploma_digital/?query=%s", diplomasCrudURL(), url.QueryEscape(rawQuery))
 
 	var diplomas []diplomaDigitalResponse

@@ -114,7 +114,7 @@ func generarDiplomaPreviewConOpciones(ctx context.Context, documentoID int64, fi
 		return nil, err
 	}
 
-	metadatos := construirMetadatosDiplomaPreview(documento, diploma)
+	metadatos := construirMetadatosDiplomaPreview(ctx, documento, diploma)
 	firmas, err := consultarFirmasDiplomaPreview(ctx, documentoID, firmaAdicional)
 	if err != nil {
 		return nil, err
@@ -249,14 +249,14 @@ func consultarDocumentoDigital(ctx context.Context, documentoID int64) (*documen
 	return &documento, nil
 }
 
-func construirMetadatosDiplomaPreview(documento *documentoDigitalResponse, diploma *diplomaDigitalResponse) DiplomaPreviewMetadatos {
+func construirMetadatosDiplomaPreview(ctx context.Context, documento *documentoDigitalResponse, diploma *diplomaDigitalResponse) DiplomaPreviewMetadatos {
 	metadatos := DiplomaPreviewMetadatos{
 		Titulo:                  strings.TrimSpace(documento.TituloOtorgado),
 		NombreEstudiante:        strings.TrimSpace(documento.NombreEstudiante),
 		TipoDocumentoEstudiante: strings.TrimSpace(documento.TipoDocumentoEstudiante),
 		NumeroDocumento:         strings.TrimSpace(documento.NumeroDocumentoEstudiante),
 		LugarExpedicion:         strings.TrimSpace(documento.MunicipioExpedicion),
-		Facultad:                facultadTexto(documento.FacultadID),
+		Facultad:                facultadTexto(ctx, documento.FacultadID),
 	}
 	if diploma != nil {
 		metadatos.DiplomaID = diploma.ID
@@ -275,7 +275,7 @@ func construirMetadatosDiplomaPreview(documento *documentoDigitalResponse, diplo
 				}
 			}
 		}
-		metadatos.Facultad = facultadTexto(&diploma.FacultadID)
+		metadatos.Facultad = facultadTexto(ctx, &diploma.FacultadID)
 	}
 	if metadatos.FechaCeremonia == "" {
 		metadatos.FechaCeremonia = fechaCeremoniaBogota(time.Now())
@@ -283,9 +283,12 @@ func construirMetadatosDiplomaPreview(documento *documentoDigitalResponse, diplo
 	return metadatos
 }
 
-func facultadTexto(facultadID *int64) string {
+func facultadTexto(ctx context.Context, facultadID *int64) string {
 	if facultadID == nil || *facultadID <= 0 {
 		return "FACULTAD"
+	}
+	if nombre := nombreDependenciaOikos(ctx, *facultadID); nombre != "" {
+		return nombre
 	}
 	return fmt.Sprintf("FACULTAD %d", *facultadID)
 }
@@ -543,42 +546,13 @@ func inferirCantidadNombres(words []string) int {
 	case 2:
 		return 1
 	case 3:
-		if esNombreComun(words[1]) {
-			return 2
-		}
 		return 1
 	}
 
-	count := 0
-	for index := len(words) - 1; index >= 0 && count < 3; index-- {
-		if !esNombreComun(words[index]) {
-			break
-		}
-		count++
-	}
-	if count > 0 {
-		return count
-	}
 	if len(words) >= 4 {
-		return 2
+		return len(words) - 2
 	}
 	return 1
-}
-
-func esNombreComun(value string) bool {
-	_, ok := nombresComunes[strings.ToUpper(quitarTildes(strings.TrimSpace(value)))]
-	return ok
-}
-
-var nombresComunes = map[string]struct{}{
-	"ALEJANDRO": {}, "ALEJANDRA": {}, "ALVARO": {}, "ANDREA": {}, "ANDRES": {},
-	"ANGIE": {}, "CAMILA": {}, "CARLOS": {}, "CATHERINE": {}, "CRISTIAN": {},
-	"DANIEL": {}, "DANIELA": {}, "DIANA": {}, "EDWIN": {}, "ELIANA": {},
-	"ESTEBAN": {}, "ESTEFANNY": {}, "FERNANDO": {}, "FRANCISCO": {}, "GABRIEL": {},
-	"GUSTAVO": {}, "INGRID": {}, "JACKY": {}, "JAVIER": {}, "JOSE": {},
-	"JUAN": {}, "JULIETH": {}, "LAURA": {}, "LUIS": {}, "MANUEL": {},
-	"MARCELA": {}, "MARIA": {}, "NATALIA": {}, "PAOLA": {}, "PATRICIA": {},
-	"VALENTINA": {}, "VIOLETH": {},
 }
 
 func titleCaseConectores(value string) string {

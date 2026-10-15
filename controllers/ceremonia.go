@@ -23,9 +23,76 @@ func (c *CeremoniaController) requestContext() context.Context {
 	return ctx
 }
 
+func (c *CeremoniaController) writeFirmaMasiva(result *services.FirmaMasivaCeremoniaResult) {
+	status := http.StatusOK
+	if result != nil && result.Firmados == 0 && result.Errores > 0 {
+		status = http.StatusConflict
+	}
+	c.writeJSON(status, result)
+}
+
 func (c *CeremoniaController) Listar() {
 	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_secretario"), 10, 64)
 	result, err := c.Service.Listar(c.requestContext(), &services.ListarCeremoniasInput{DocumentoIdentidadSecretario: documento})
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) ObtenerParametrizacionRegistro() {
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_secretario"), 10, 64)
+	vigencia, _ := strconv.Atoi(c.GetString("vigencia"))
+	result, err := c.Service.ObtenerParametrizacionRegistro(c.requestContext(), documento, vigencia)
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	if result == nil {
+		c.writeJSON(http.StatusOK, map[string]interface{}{"vigencia": vigencia, "existe": false})
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) GuardarParametrizacionRegistro() {
+	payload, err := decodeBody[services.ParametrizacionRegistroInput](&c.Controller)
+	if err != nil {
+		c.writeError(http.StatusBadRequest, err)
+		return
+	}
+	result, err := c.Service.GuardarParametrizacionRegistro(c.requestContext(), payload)
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) ListarDecano() {
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_decano"), 10, 64)
+	result, err := c.Service.ListarDecano(c.requestContext(), &services.ListarCeremoniasInput{DocumentoIdentidadSecretario: documento})
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) ListarSecretariaGeneral() {
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_firmante"), 10, 64)
+	result, err := c.Service.ListarSecretariaGeneral(c.requestContext(), &services.ListarCeremoniasInput{DocumentoIdentidadFirmante: documento})
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) ListarRector() {
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_firmante"), 10, 64)
+	result, err := c.Service.ListarRector(c.requestContext(), &services.ListarCeremoniasInput{DocumentoIdentidadFirmante: documento})
 	if err != nil {
 		c.writeError(mapServiceError(err), err)
 		return
@@ -119,6 +186,108 @@ func (c *CeremoniaController) QuitarPrograma() {
 	c.writeJSON(http.StatusOK, result)
 }
 
+func (c *CeremoniaController) ListarFirmasDecano() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_decano"), 10, 64)
+	result, err := c.Service.ListarFirmasDecano(c.requestContext(), id, &services.ListarCeremoniasInput{DocumentoIdentidadSecretario: documento})
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) FirmarMasivamenteDecano() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	payload, err := decodeBody[services.FirmaMasivaCeremoniaInput](&c.Controller)
+	if err != nil {
+		c.writeError(http.StatusBadRequest, err)
+		return
+	}
+	result, err := c.Service.FirmarMasivamenteDecano(c.requestContext(), id, payload)
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeFirmaMasiva(result)
+}
+
+func (c *CeremoniaController) ListarFirmasSecretariaGeneral() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_firmante"), 10, 64)
+	result, err := c.Service.ListarFirmasSecretariaGeneral(c.requestContext(), id, &services.ListarCeremoniasInput{DocumentoIdentidadFirmante: documento})
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) FirmarMasivamenteSecretariaGeneral() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	payload, err := decodeBody[services.FirmaMasivaCeremoniaInput](&c.Controller)
+	if err != nil {
+		c.writeError(http.StatusBadRequest, err)
+		return
+	}
+	result, err := c.Service.FirmarMasivamenteSecretariaGeneral(c.requestContext(), id, payload)
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeFirmaMasiva(result)
+}
+
+func (c *CeremoniaController) ListarFirmasRector() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_firmante"), 10, 64)
+	result, err := c.Service.ListarFirmasRector(c.requestContext(), id, &services.ListarCeremoniasInput{DocumentoIdentidadFirmante: documento})
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) FirmarMasivamenteRector() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	payload, err := decodeBody[services.FirmaMasivaCeremoniaInput](&c.Controller)
+	if err != nil {
+		c.writeError(http.StatusBadRequest, err)
+		return
+	}
+	result, err := c.Service.FirmarMasivamenteRector(c.requestContext(), id, payload)
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeFirmaMasiva(result)
+}
+
 func (c *CeremoniaController) EstudiantesPrograma() {
 	programaID, err := strconv.ParseInt(c.Ctx.Input.Param(":programa_id"), 10, 64)
 	if err != nil || programaID <= 0 {
@@ -132,4 +301,38 @@ func (c *CeremoniaController) EstudiantesPrograma() {
 		return
 	}
 	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) ListarFirmas() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	documento, _ := strconv.ParseInt(c.GetString("documento_identidad_secretario"), 10, 64)
+	result, err := c.Service.ListarFirmas(c.requestContext(), id, &services.ListarCeremoniasInput{DocumentoIdentidadSecretario: documento})
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeJSON(http.StatusOK, result)
+}
+
+func (c *CeremoniaController) FirmarMasivamente() {
+	id, err := strconv.ParseInt(c.Ctx.Input.Param(":id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.writeError(http.StatusBadRequest, services.ErrInvalidInput)
+		return
+	}
+	payload, err := decodeBody[services.FirmaMasivaCeremoniaInput](&c.Controller)
+	if err != nil {
+		c.writeError(http.StatusBadRequest, err)
+		return
+	}
+	result, err := c.Service.FirmarMasivamente(c.requestContext(), id, payload)
+	if err != nil {
+		c.writeError(mapServiceError(err), err)
+		return
+	}
+	c.writeFirmaMasiva(result)
 }

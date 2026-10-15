@@ -2,14 +2,13 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/udistrital/utils_oas/v2/request"
 )
 
 type secretariaFacultadItem struct {
@@ -31,6 +30,17 @@ type facultadOikosGedepResponse struct {
 		IDOikos string `json:"id_oikos"`
 		IDGedep string `json:"id_gedep"`
 	} `json:"homologacion"`
+}
+
+type dependenciaOikosArgoResponse struct {
+	Dependencias struct {
+		Dependencia []struct {
+			IDMaster string `json:"id_master"`
+			IDGedep  string `json:"id_gedep"`
+			IDArgo   string `json:"id_argo"`
+			IDAcad   string `json:"id_acad"`
+		} `json:"dependencia"`
+	} `json:"dependencias"`
 }
 
 type secretariaFacultadAutorizada struct {
@@ -100,24 +110,33 @@ func consultarFacultadOikosGedep(ctx context.Context, depGedep string) (int64, e
 	return id, nil
 }
 
+func consultarFacultadOikosArgo(ctx context.Context, depArgo string) (int64, error) {
+	baseURL := homologacionDependenciasAPIURL()
+	if baseURL == "" {
+		return 0, fmt.Errorf("%w: HOMOLOGACION_DEPENDENCIAS_API_URL no configurado", ErrInvalidState)
+	}
+	endpoint := strings.TrimRight(baseURL, "/") + "/oikos_argo/" + url.PathEscape(strings.TrimSpace(depArgo))
+	var response dependenciaOikosArgoResponse
+	if err := getJSON(ctx, endpoint, &response); err != nil {
+		return 0, fmt.Errorf("%w: oikos_argo: %v", ErrExternalService, err)
+	}
+	if len(response.Dependencias.Dependencia) == 0 {
+		return 0, fmt.Errorf("%w: oikos_argo sin dependencias", ErrInvalidState)
+	}
+	id, err := strconv.ParseInt(strings.TrimSpace(response.Dependencias.Dependencia[0].IDMaster), 10, 64)
+	if err != nil || id <= 0 {
+		return 0, fmt.Errorf("%w: homologacion oikos_argo sin id_master valido", ErrInvalidState)
+	}
+	return id, nil
+}
+
 func getJSON(ctx context.Context, endpoint string, target any) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	status, err := request.GetWithContext(ctx, endpoint, target)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Accept", "application/json")
-	client := &http.Client{Timeout: 6 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("status %d", resp.StatusCode)
-	}
-	decoder := json.NewDecoder(resp.Body)
-	if err := decoder.Decode(target); err != nil {
-		return err
+	if status < 200 || status >= 300 {
+		return fmt.Errorf("status %d", status)
 	}
 	return nil
 }

@@ -3,8 +3,10 @@ package services
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -14,7 +16,7 @@ import (
 
 type S3Service struct{}
 
-func (s S3Service) PutDiploma(ctx context.Context, uuidDocumento, pdfBase64 string) (S3ObjectRef, error) {
+func (s S3Service) PutDiploma(ctx context.Context, uuidDocumento, nombreArchivo, pdfBase64 string) (S3ObjectRef, error) {
 	bucket := diplomasS3Bucket()
 	if bucket == "" {
 		return S3ObjectRef{}, fmt.Errorf("%w: DiplomasS3Bucket is required", ErrInvalidInput)
@@ -49,12 +51,19 @@ func (s S3Service) PutDiploma(ctx context.Context, uuidDocumento, pdfBase64 stri
 		o.UsePathStyle = true
 	})
 
-	key := fmt.Sprintf("diplomas/%s/diploma.pdf", uuidDocumento)
+	nombreArchivo = strings.TrimSpace(nombreArchivo)
+	if nombreArchivo == "" {
+		nombreArchivo = "diploma.pdf"
+	}
+	key := fmt.Sprintf("diplomas/%s/%s", uuidDocumento, nombreArchivo)
+	digest := sha256.Sum256(pdf)
 	output, err := client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(bucket),
-		Key:         aws.String(key),
-		Body:        bytes.NewReader(pdf),
-		ContentType: aws.String("application/pdf"),
+		Bucket:         aws.String(bucket),
+		Key:            aws.String(key),
+		Body:           bytes.NewReader(pdf),
+		ContentType:    aws.String("application/pdf"),
+		IfNoneMatch:    aws.String("*"),
+		ChecksumSHA256: aws.String(base64.StdEncoding.EncodeToString(digest[:])),
 	})
 	if err != nil {
 		return S3ObjectRef{}, fmt.Errorf("put diploma in s3: %w", err)

@@ -1,8 +1,10 @@
 package services
 
 import (
+	"context"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestFormatoTituloDiploma(t *testing.T) {
@@ -19,11 +21,11 @@ func TestFormatoTituloDiploma(t *testing.T) {
 
 func TestFormatoNombreDiploma(t *testing.T) {
 	cases := map[string]string{
-		"GUTIERREZ MEJIA JACKY ESTEFANNY":          "Jacky Estefanny Gutierrez Mejia",
-		"ZARABANDA GUTIERREZ ALVARO ALEJANDRO":     "Alvaro Alejandro Zarabanda Gutierrez",
-		"LATORRE CABRERA LAURA VALENTINA":          "Laura Valentina Latorre Cabrera",
-		"ALVAREZ INGRID":                           "Ingrid Alvarez",
-		"APELLIDO1 APELLIDO2 APELLIDO3 MARIA JOSE": "Maria Jose Apellido1 Apellido2 Apellido3",
+		"APELLIDO NOMBRE":                             "Nombre Apellido",
+		"APELLIDO1 APELLIDO2 NOMBRE":                  "Nombre Apellido1 Apellido2",
+		"APELLIDO1 APELLIDO2 NOMBRE1 NOMBRE2":         "Nombre1 Nombre2 Apellido1 Apellido2",
+		"APELLIDO1 APELLIDO2 NOMBRE1 NOMBRE2 NOMBRE3": "Nombre1 Nombre2 Nombre3 Apellido1 Apellido2",
+		"APELLIDO1 APELLIDO2, NOMBRE1 NOMBRE2":        "Nombre1 Nombre2 Apellido1 Apellido2",
 	}
 	for input, expected := range cases {
 		if got := formatoNombreDiploma(input); got != expected {
@@ -85,5 +87,21 @@ func TestSiglaFacultadRegistro(t *testing.T) {
 		if got := siglaFacultadRegistro(input); got != expected {
 			t.Fatalf("siglaFacultadRegistro(%q) = %q, want %q", input, got, expected)
 		}
+	}
+}
+
+func TestFacultadTextoUsaNombreInstitucional(t *testing.T) {
+	id := int64(14)
+	dependenciaOikosCache.Lock()
+	dependenciaOikosCache.items[id] = dependenciaOikosCacheEntry{nombre: "FACULTAD DE INGENIERIA", expira: time.Now().Add(time.Hour)}
+	dependenciaOikosCache.Unlock()
+	t.Cleanup(func() {
+		dependenciaOikosCache.Lock()
+		delete(dependenciaOikosCache.items, id)
+		dependenciaOikosCache.Unlock()
+	})
+
+	if got := siglaFacultadRegistro(facultadTexto(context.Background(), &id)); got != "FI" {
+		t.Fatalf("sigla facultad 14 = %q, want FI", got)
 	}
 }

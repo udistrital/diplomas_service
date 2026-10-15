@@ -90,13 +90,111 @@ func (s CeremoniaService) Listar(ctx context.Context, input *ListarCeremoniasInp
 	if err != nil {
 		return nil, err
 	}
+	return s.listarPorFacultad(ctx, secretario.FacultadID, true)
+}
 
-	relaciones, err := s.listarRelacionesFacultad(ctx, secretario.FacultadID)
+func (s CeremoniaService) ObtenerParametrizacionRegistro(ctx context.Context, documentoSecretario int64, vigencia int) (*ParametrizacionRegistroResponse, error) {
+	if documentoSecretario <= 0 {
+		return nil, fmt.Errorf("%w: documento_identidad_secretario is required", ErrInvalidInput)
+	}
+	if vigencia <= 0 {
+		return nil, fmt.Errorf("%w: vigencia is required", ErrInvalidInput)
+	}
+	secretario, err := s.secretarioAcademicoAutorizado(ctx, documentoSecretario)
+	if err != nil {
+		return nil, err
+	}
+	return buscarParametrizacionRegistro(ctx, secretario.FacultadID, vigencia)
+}
+
+func (s CeremoniaService) GuardarParametrizacionRegistro(ctx context.Context, input *ParametrizacionRegistroInput) (*ParametrizacionRegistroResponse, error) {
+	if input == nil {
+		return nil, fmt.Errorf("%w: request body is required", ErrInvalidInput)
+	}
+	if input.DocumentoIdentidadSecretario <= 0 || input.Vigencia <= 0 {
+		return nil, fmt.Errorf("%w: documento_identidad_secretario and vigencia are required", ErrInvalidInput)
+	}
+	if input.LibroInicial <= 0 || input.FolioInicial <= 0 || input.RegistroInicial <= 0 ||
+		input.ConsecutivoFacultadInicial <= 0 || input.FoliosPorLibro <= 0 || input.RegistrosPorFolio <= 0 {
+		return nil, fmt.Errorf("%w: todos los valores de registro deben ser mayores a cero", ErrInvalidInput)
+	}
+	secretario, err := s.secretarioAcademicoAutorizado(ctx, input.DocumentoIdentidadSecretario)
+	if err != nil {
+		return nil, err
+	}
+	payload := ParametrizacionRegistroResponse{
+		FacultadID:                 secretario.FacultadID,
+		Vigencia:                   input.Vigencia,
+		LibroInicial:               input.LibroInicial,
+		FolioInicial:               input.FolioInicial,
+		RegistroInicial:            input.RegistroInicial,
+		ConsecutivoFacultadInicial: input.ConsecutivoFacultadInicial,
+		FoliosPorLibro:             input.FoliosPorLibro,
+		RegistrosPorFolio:          input.RegistrosPorFolio,
+		Activo:                     true,
+	}
+	actual, err := buscarParametrizacionRegistro(ctx, secretario.FacultadID, input.Vigencia)
+	if err != nil {
+		return nil, err
+	}
+	if actual != nil {
+		payload.ID = actual.ID
+		var result ParametrizacionRegistroResponse
+		status, err := request.PutWithContext(ctx, fmt.Sprintf("%s/parametrizacion_registro_facultad/%d", diplomasCrudURL(), actual.ID), payload, &result)
+		if err != nil {
+			return nil, fmt.Errorf("%w: diplomas_crud parametrizacion_registro_facultad put status %d: %v", ErrExternalService, status, err)
+		}
+		if status < 200 || status >= 300 {
+			return nil, fmt.Errorf("%w: diplomas_crud parametrizacion_registro_facultad put returned status %d", ErrExternalService, status)
+		}
+		return &result, nil
+	}
+	var result ParametrizacionRegistroResponse
+	status, err := request.PostWithContext(ctx, diplomasCrudURL()+"/parametrizacion_registro_facultad/", payload, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%w: diplomas_crud parametrizacion_registro_facultad status %d: %v", ErrExternalService, status, err)
+	}
+	if status < 200 || status >= 300 {
+		return nil, fmt.Errorf("%w: diplomas_crud parametrizacion_registro_facultad returned status %d", ErrExternalService, status)
+	}
+	return &result, nil
+}
+
+func buscarParametrizacionRegistro(ctx context.Context, facultadID int64, vigencia int) (*ParametrizacionRegistroResponse, error) {
+	rawQuery := fmt.Sprintf("facultad_id:%d,vigencia:%d", facultadID, vigencia)
+	endpoint := fmt.Sprintf("%s/parametrizacion_registro_facultad/?query=%s", diplomasCrudURL(), url.QueryEscape(rawQuery))
+	var items []ParametrizacionRegistroResponse
+	status, err := request.GetWithContext(ctx, endpoint, &items)
+	if err != nil {
+		return nil, fmt.Errorf("%w: diplomas_crud parametrizacion_registro_facultad status %d: %v", ErrExternalService, status, err)
+	}
+	if status < 200 || status >= 300 {
+		return nil, fmt.Errorf("%w: diplomas_crud parametrizacion_registro_facultad returned status %d", ErrExternalService, status)
+	}
+	if len(items) == 0 {
+		return nil, nil
+	}
+	return &items[0], nil
+}
+
+func (s CeremoniaService) ListarDecano(ctx context.Context, input *ListarCeremoniasInput) (*TableroCeremoniasResult, error) {
+	if input == nil || input.DocumentoIdentidadSecretario <= 0 {
+		return nil, fmt.Errorf("%w: documento_identidad_decano is required", ErrInvalidInput)
+	}
+	decano, err := s.decanoAutorizado(ctx, input.DocumentoIdentidadSecretario)
+	if err != nil {
+		return nil, err
+	}
+	return s.listarPorFacultad(ctx, decano.FacultadID, false)
+}
+
+func (s CeremoniaService) listarPorFacultad(ctx context.Context, facultadID int64, incluirProgramas bool) (*TableroCeremoniasResult, error) {
+	relaciones, err := s.listarRelacionesFacultad(ctx, facultadID)
 	if err != nil {
 		return nil, err
 	}
 
-	result := TableroCeremoniasResult{FacultadID: secretario.FacultadID, Ceremonias: []CeremoniaResumen{}, AprobadosProgramas: []ProgramaAprobadoResumen{}, PendientesProgramas: []ProgramaAprobadoResumen{}, AsignadosProgramas: []ProgramaAprobadoResumen{}}
+	result := TableroCeremoniasResult{FacultadID: facultadID, Ceremonias: []CeremoniaResumen{}, AprobadosProgramas: []ProgramaAprobadoResumen{}, PendientesProgramas: []ProgramaAprobadoResumen{}, AsignadosProgramas: []ProgramaAprobadoResumen{}}
 	for _, relacion := range relaciones {
 		if relacion.CeremoniaGrado == nil || !relacion.Activo || !relacion.CeremoniaGrado.Activo {
 			continue
@@ -137,13 +235,15 @@ func (s CeremoniaService) Listar(ctx context.Context, input *ListarCeremoniasInp
 	}
 	result.TotalCeremonias = len(result.Ceremonias)
 	result.CuposDisponibles = result.TotalCupos - result.CuposAsignados
-	result.AprobadosProgramas, result.AprobadosTotal = programasAprobadosResumen(ctx, secretario.FacultadID)
 	result.AsignadosProgramas, err = programasAsignadosResumen(ctx, relaciones)
 	if err != nil {
 		return nil, err
 	}
 	aplicarBloqueosCeremonias(result.Ceremonias, result.AsignadosProgramas)
-	result.PendientesProgramas = programasPendientes(result.AprobadosProgramas, result.AsignadosProgramas)
+	if incluirProgramas {
+		result.AprobadosProgramas, result.AprobadosTotal = programasAprobadosResumen(ctx, facultadID)
+		result.PendientesProgramas = programasPendientes(result.AprobadosProgramas, result.AsignadosProgramas)
+	}
 	return &result, nil
 }
 
@@ -315,10 +415,11 @@ func (s CeremoniaService) AsignarEstudiantes(ctx context.Context, ceremoniaID in
 	}
 	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
 	for _, programaID := range ids {
-		for _, estudiante := range estudiantesPorPrograma[programaID] {
+		for idx, estudiante := range estudiantesPorPrograma[programaID] {
 			estudianteEnriquecido, err := enriquecerEstudianteAprobado(ctx, estudiante)
 			if err == nil {
 				estudiante = estudianteEnriquecido
+				estudiantesPorPrograma[programaID][idx] = estudiante
 			}
 			documentoPayload := estudiante.DocumentoDigitalRequest(tipoDocumentoDigitalID, estadoDocumentoID)
 			documento, err := buscarDocumentoDigitalExistente(ctx, documentoPayload)
@@ -406,7 +507,11 @@ func (s CeremoniaService) EstudiantesPrograma(ctx context.Context, input *Estudi
 		}
 		enriquecido, err := enriquecerEstudianteAprobado(ctx, estudiante)
 		if err != nil {
-			return nil, err
+			// La vista de asignación no debe quedar bloqueada porque un estudiante
+			// no tenga todavía datos completos para diploma. Se conserva el código
+			// para permitir asignar el programa completo y revisar el caso después.
+			filtrados = append(filtrados, estudiante)
+			continue
 		}
 		filtrados = append(filtrados, enriquecido)
 	}
@@ -503,8 +608,48 @@ func (s CeremoniaService) secretarioAcademicoAutorizado(ctx context.Context, doc
 	return firmante, nil
 }
 
+func (s CeremoniaService) decanoAutorizado(ctx context.Context, documento int64) (*FirmanteActivo, error) {
+	firmante, err := FirmanteService{}.ConsultarRolActivo(ctx, documento, time.Now())
+	if err != nil {
+		return nil, err
+	}
+	if firmante == nil || firmante.Rol != "decano" || firmante.Orden != 2 {
+		return nil, ErrNoActiveRole
+	}
+	facultadID, err := consultarFacultadOikosArgo(ctx, firmante.Dependencia)
+	if err != nil {
+		return nil, fmt.Errorf("%w: no fue posible determinar la facultad del decano", ErrInvalidState)
+	}
+	firmante.FacultadID = facultadID
+	return firmante, nil
+}
+
+func (s CeremoniaService) firmanteOrdenAutorizado(ctx context.Context, documento int64, rol string, orden int) (*FirmanteActivo, error) {
+	firmante, err := FirmanteService{}.ConsultarRolActivo(ctx, documento, time.Now())
+	if err != nil {
+		return nil, err
+	}
+	if firmante == nil || firmante.Rol != rol || firmante.Orden != orden {
+		return nil, ErrNoActiveRole
+	}
+	return firmante, nil
+}
+
 func (s CeremoniaService) listarRelacionesFacultad(ctx context.Context, facultadID int64) ([]ceremoniaFacultadProgramaCRUDResponse, error) {
 	endpoint := fmt.Sprintf("%s/ceremonia_facultad_programa/?query=%s&limit=-1", diplomasCrudURL(), url.QueryEscape(fmt.Sprintf("facultad_id:%d,activo:true", facultadID)))
+	var relaciones []ceremoniaFacultadProgramaCRUDResponse
+	status, err := request.GetWithContext(ctx, endpoint, &relaciones)
+	if err != nil {
+		return nil, fmt.Errorf("%w: diplomas_crud ceremonia_facultad_programa status %d: %v", ErrExternalService, status, err)
+	}
+	if status < 200 || status >= 300 {
+		return nil, fmt.Errorf("%w: diplomas_crud ceremonia_facultad_programa returned status %d", ErrExternalService, status)
+	}
+	return relaciones, nil
+}
+
+func (s CeremoniaService) listarRelacionesActivas(ctx context.Context) ([]ceremoniaFacultadProgramaCRUDResponse, error) {
+	endpoint := fmt.Sprintf("%s/ceremonia_facultad_programa/?query=%s&limit=-1", diplomasCrudURL(), url.QueryEscape("activo:true"))
 	var relaciones []ceremoniaFacultadProgramaCRUDResponse
 	status, err := request.GetWithContext(ctx, endpoint, &relaciones)
 	if err != nil {
@@ -526,7 +671,7 @@ func (s CeremoniaService) relacionCeremoniaAutorizada(ctx context.Context, cerem
 			return &relacion, nil
 		}
 	}
-	return nil, fmt.Errorf("%w: ceremonia no pertenece a la facultad del secretario academico", ErrNoActiveRole)
+	return nil, fmt.Errorf("%w: ceremonia no pertenece a la facultad del firmante", ErrNoActiveRole)
 }
 
 func consultarEstudiantesAprobadosPorFacultadLigero(ctx context.Context, facultadID int64) ([]EstudianteAprobadoGrado, error) {
