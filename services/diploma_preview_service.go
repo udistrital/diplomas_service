@@ -178,28 +178,33 @@ func consultarFirmasDiplomaPreview(ctx context.Context, documentoID int64, firma
 }
 
 func construirFirmaPreview(ctx context.Context, orden int, documentoIdentidad int64) (diplomaSignatureRender, error) {
+	nombre := strconv.FormatInt(documentoIdentidad, 10)
 	firmante, err := FirmanteService{}.ConsultarRolActivo(ctx, documentoIdentidad, time.Now())
 	if err == nil && firmante != nil {
-		return construirFirmaPreviewDesdeFirmante(ctx, firmante)
+		nombre = firmante.Nombre
 	}
 
 	imagen, err := consultarFirmaGraficaFirmante(ctx, documentoIdentidad)
 	if err != nil {
 		if errors.Is(err, ErrInvalidState) || errors.Is(err, ErrInvalidInput) || errors.Is(err, ErrExternalService) {
-			return diplomaSignatureRender{
-				Orden:  orden,
-				Nombre: strconv.FormatInt(documentoIdentidad, 10),
-				Cargo:  cargoPreviewPorOrden(orden),
-			}, nil
+			return construirFirmaPreviewHistorica(orden, documentoIdentidad, nombre, ""), nil
 		}
 		return diplomaSignatureRender{}, err
 	}
+	return construirFirmaPreviewHistorica(orden, documentoIdentidad, nombre, imagen), nil
+}
+
+func construirFirmaPreviewHistorica(orden int, documentoIdentidad int64, nombre, imagen string) diplomaSignatureRender {
+	nombre = strings.TrimSpace(nombre)
+	if nombre == "" {
+		nombre = strconv.FormatInt(documentoIdentidad, 10)
+	}
 	return diplomaSignatureRender{
 		Orden:  orden,
-		Nombre: strconv.FormatInt(documentoIdentidad, 10),
+		Nombre: nombre,
 		Cargo:  cargoPreviewPorOrden(orden),
 		Imagen: imagen,
-	}, nil
+	}
 }
 
 func construirFirmaPreviewDesdeFirmante(ctx context.Context, firmante *FirmanteActivo) (diplomaSignatureRender, error) {
@@ -298,8 +303,12 @@ func fechaCeremoniaBogota(fecha time.Time) string {
 		return ""
 	}
 	meses := []string{"enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"}
-	fecha = fecha.In(time.FixedZone("America/Bogota", -5*60*60))
+	fecha = fechaEnBogota(fecha)
 	return fmt.Sprintf("En la ciudad de Bogota a los %d dias del mes de %s de %d", fecha.Day(), meses[int(fecha.Month())-1], fecha.Year())
+}
+
+func fechaEnBogota(fecha time.Time) time.Time {
+	return fecha.In(time.FixedZone("America/Bogota", -5*60*60))
 }
 
 func construirPDFDiplomaPreview(m DiplomaPreviewMetadatos, firmas []diplomaSignatureRender, mostrarQRDemo bool) ([]byte, error) {

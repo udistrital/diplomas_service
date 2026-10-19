@@ -46,12 +46,10 @@ func (s FirmaDiplomaService) Firmar(ctx context.Context, documentoID int64, inpu
 		if err != nil {
 			return nil, err
 		}
-		qrDemoURL := diplomaPreviewQRDemoURL()
 		return &FirmaDiplomaResult{
 			Preview:          true,
 			FirmaID:          "QR-DEMO",
 			DocumentoID:      documentoID,
-			QRURLSegura:      qrDemoURL,
 			Firmante:         *firmanteActivo,
 			DocumentoDigital: previewDocumento.DocumentoDigital,
 			FirmaDocumento:   firmaDocumento,
@@ -177,7 +175,7 @@ func nombreArchivoDiploma(preview *DiplomaPreviewResult) string {
 	if codigo <= 0 {
 		codigo = preview.DocumentoID
 	}
-	return fmt.Sprintf("%s_Diploma_%d.pdf", fecha.Format("20060102"), codigo)
+	return fmt.Sprintf("%s_Diploma_%d.pdf", fechaEnBogota(fecha).Format("20060102"), codigo)
 }
 
 func (s FirmaDiplomaService) Anular(ctx context.Context, documentoID int64, input *AnularFirmaDiplomaInput) (*AnularFirmaDiplomaResult, error) {

@@ -105,3 +105,38 @@ func TestFacultadTextoUsaNombreInstitucional(t *testing.T) {
 		t.Fatalf("sigla facultad 14 = %q, want FI", got)
 	}
 }
+
+func TestFirmaPreviewConservaDosRolesHistoricosDeLaMismaPersona(t *testing.T) {
+	const documento = int64(123456789)
+	decano := construirFirmaPreviewHistorica(2, documento, "Persona Compartida", "rubrica")
+	rector := construirFirmaPreviewHistorica(4, documento, "Persona Compartida", "rubrica")
+
+	if decano.Orden != 2 || decano.Cargo != "DECANO" || rector.Orden != 4 || rector.Cargo != "RECTOR" {
+		t.Fatalf("se perdieron posiciones historicas: decano=%+v rector=%+v", decano, rector)
+	}
+	if decano.Imagen != rector.Imagen || decano.Imagen == "" {
+		t.Fatalf("la misma rubrica debe poder renderizarse en ambos cargos")
+	}
+
+	html, err := construirHTMLDiplomaPreview(DiplomaPreviewMetadatos{}, []diplomaSignatureRender{decano, rector}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(html, "DECANO") || !strings.Contains(html, "RECTOR") || strings.Count(html, "data:image/png;base64,rubrica") != 2 {
+		t.Fatalf("el preview que alimenta el PDF definitivo no renderizo ambos cargos: %s", html)
+	}
+}
+
+func TestFirmaPreviewConservaOrdenDeCuatroFirmantes(t *testing.T) {
+	firmas := []diplomaSignatureRender{
+		construirFirmaPreviewHistorica(1, 1, "Secretario", "firma-1"),
+		construirFirmaPreviewHistorica(2, 2, "Decano", "firma-2"),
+		construirFirmaPreviewHistorica(3, 3, "Secretario General", "firma-3"),
+		construirFirmaPreviewHistorica(4, 4, "Rector", "firma-4"),
+	}
+	for index, firma := range firmas {
+		if firma.Orden != index+1 || firma.Cargo != cargoPreviewPorOrden(index+1) {
+			t.Fatalf("firma %d fuera de su posicion historica: %+v", index, firma)
+		}
+	}
+}

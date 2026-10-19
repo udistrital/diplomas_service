@@ -41,11 +41,11 @@ func TestCrearCeremoniaExitosa(t *testing.T) {
 				t.Fatalf("expected Accept application/json")
 			}
 			_, _ = w.Write([]byte(homologacionGedepJSON()))
-		case r.Method == http.MethodPost && r.URL.Path == "/ceremonia_grado/":
+		case r.Method == http.MethodPost && r.URL.Path == "/v1/ceremonia_grado/":
 			ceremoniaPosts++
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(`{"id":99,"lugar":"Auditorio Mayor","cantidad_estudiantes_programada":65,"activo":true}`))
-		case r.Method == http.MethodPost && r.URL.Path == "/ceremonia_facultad_programa/":
+		case r.Method == http.MethodPost && r.URL.Path == "/v1/ceremonia_facultad_programa/":
 			relacionPosts++
 			var payload ceremoniaFacultadProgramaCRUDRequest
 			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
@@ -126,7 +126,7 @@ func TestCrearCeremoniaFalloCrearCeremoniaEnCRUD(t *testing.T) {
 				t.Fatalf("expected Accept application/json")
 			}
 			_, _ = w.Write([]byte(homologacionGedepJSON()))
-		case r.Method == http.MethodPost && r.URL.Path == "/ceremonia_grado/":
+		case r.Method == http.MethodPost && r.URL.Path == "/v1/ceremonia_grado/":
 			w.WriteHeader(http.StatusInternalServerError)
 		default:
 			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
@@ -158,12 +158,12 @@ func TestCrearCeremoniaFalloRelacionEjecutaRollback(t *testing.T) {
 				t.Fatalf("expected Accept application/json")
 			}
 			_, _ = w.Write([]byte(homologacionGedepJSON()))
-		case r.Method == http.MethodPost && r.URL.Path == "/ceremonia_grado/":
+		case r.Method == http.MethodPost && r.URL.Path == "/v1/ceremonia_grado/":
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(`{"id":99,"activo":true}`))
-		case r.Method == http.MethodPost && r.URL.Path == "/ceremonia_facultad_programa/":
+		case r.Method == http.MethodPost && r.URL.Path == "/v1/ceremonia_facultad_programa/":
 			w.WriteHeader(http.StatusInternalServerError)
-		case r.Method == http.MethodDelete && r.URL.Path == "/ceremonia_grado/99":
+		case r.Method == http.MethodDelete && r.URL.Path == "/v1/ceremonia_grado/99":
 			deleteCeremonia = true
 			w.WriteHeader(http.StatusNoContent)
 		default:

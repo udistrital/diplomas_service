@@ -58,12 +58,13 @@ func (s S3Service) PutDiploma(ctx context.Context, uuidDocumento, nombreArchivo,
 	key := fmt.Sprintf("diplomas/%s/%s", uuidDocumento, nombreArchivo)
 	digest := sha256.Sum256(pdf)
 	output, err := client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:         aws.String(bucket),
-		Key:            aws.String(key),
-		Body:           bytes.NewReader(pdf),
-		ContentType:    aws.String("application/pdf"),
-		IfNoneMatch:    aws.String("*"),
-		ChecksumSHA256: aws.String(base64.StdEncoding.EncodeToString(digest[:])),
+		Bucket:             aws.String(bucket),
+		Key:                aws.String(key),
+		Body:               bytes.NewReader(pdf),
+		ContentType:        aws.String("application/pdf"),
+		ContentDisposition: aws.String(fmt.Sprintf(`attachment; filename="%s"`, nombreDescargaSeguro(nombreArchivo))),
+		IfNoneMatch:        aws.String("*"),
+		ChecksumSHA256:     aws.String(base64.StdEncoding.EncodeToString(digest[:])),
 	})
 	if err != nil {
 		return S3ObjectRef{}, fmt.Errorf("put diploma in s3: %w", err)
@@ -82,4 +83,16 @@ func (s S3Service) PutDiploma(ctx context.Context, uuidDocumento, nombreArchivo,
 	}
 
 	return ref, nil
+}
+
+func nombreDescargaSeguro(nombreArchivo string) string {
+	nombreArchivo = strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(nombreArchivo, "\r", ""), "\n", ""))
+	partes := strings.FieldsFunc(nombreArchivo, func(r rune) bool { return r == '/' || r == '\\' })
+	if len(partes) > 0 {
+		nombreArchivo = partes[len(partes)-1]
+	}
+	if nombreArchivo == "" {
+		return "diploma.pdf"
+	}
+	return strings.ReplaceAll(nombreArchivo, `"`, "")
 }

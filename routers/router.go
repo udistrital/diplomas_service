@@ -16,6 +16,8 @@ func init() {
 		beego.NSNamespace("/diplomas",
 			beego.NSRouter("/estudiantes-aprobados", &controllers.EstudianteGradoController{}, "get:AprobadosPorFacultad"),
 			beego.NSRouter("/estudiantes-aprobados/documentos", &controllers.EstudianteGradoController{}, "post:CrearDocumentosAprobados"),
+			beego.NSRouter("/registro-control/archivo", &controllers.DiplomasZIPController{}, "get:Descargar"),
+			beego.NSRouter("/registro-control/opciones", &controllers.DiplomasZIPController{}, "get:Opciones"),
 		),
 		beego.NSNamespace("/firmantes",
 			beego.NSRouter("/rol-activo", &controllers.FirmanteController{}, "get:RolActivo"),

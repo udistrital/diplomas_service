@@ -17,12 +17,21 @@ func configString(confKey, envKey string) string {
 	return strings.TrimRight(value, "/")
 }
 
+// configEndpoint appends the API contract path to the configured service base URL.
+func configEndpoint(confKey, envKey, path string) string {
+	base := configString(confKey, envKey)
+	if base == "" {
+		return ""
+	}
+	return base + path
+}
+
 func firmaElectronicaMidURL() string {
 	return configString("FirmaElectronicaMidURL", "FIRMA_ELECTRONICA_MID_URL")
 }
 
 func diplomasCrudURL() string {
-	return configString("DiplomasCrudURL", "DIPLOMAS_CRUD_URL")
+	return configEndpoint("DiplomasCrudURL", "DIPLOMAS_CRUD_URL", "/v1")
 }
 
 func administrativaAmazonAPIURL() string {
@@ -30,11 +39,11 @@ func administrativaAmazonAPIURL() string {
 }
 
 func documentosCrudGestorDocumentalURL() string {
-	return configString("DocumentosCrudGestorDocumentalURL", "DOCUMENTOS_CRUD_GESTOR_DOCUMENTAL_URL")
+	return configEndpoint("DocumentosCrudGestorDocumentalURL", "DOCUMENTOS_CRUD_GESTOR_DOCUMENTAL_URL", "/v1/gestor_documental")
 }
 
 func gestorDocumentalDocumentURL() string {
-	return configString("GestorDocumentalDocumentURL", "GESTOR_DOCUMENTAL_DOCUMENT_URL")
+	return configEndpoint("GestorDocumentalDocumentURL", "GESTOR_DOCUMENTAL_DOCUMENT_URL", "/v1/document")
 }
 
 func pazYSalvosCrudURL() string {
@@ -42,11 +51,7 @@ func pazYSalvosCrudURL() string {
 }
 
 func pazYSalvosAprobadosQuery() string {
-	value := configString("PazYSalvosAprobadosQuery", "PAZ_Y_SALVOS_APROBADOS_QUERY")
-	if value == "" {
-		return "Orc:true"
-	}
-	return value
+	return "Orc:true"
 }
 
 func academicaCoreServiceURL() string {
@@ -54,7 +59,7 @@ func academicaCoreServiceURL() string {
 }
 
 func parametrosCrudURL() string {
-	return configString("ParametrosCrudURL", "PARAMETROS_CRUD_URL")
+	return configEndpoint("ParametrosCrudURL", "PARAMETROS_CRUD_URL", "/v1")
 }
 
 func academicaPruebasAPIURL() string {
@@ -82,10 +87,6 @@ func oikosAPIURL() string {
 		value = strings.TrimSuffix(value, "/dependencia")
 	}
 	return value
-}
-
-func diplomaPreviewQRDemoURL() string {
-	return configString("DiplomaPreviewQRDemoURL", "DIPLOMA_PREVIEW_QR_DEMO_URL")
 }
 
 func diplomaInstitutionalLogoPath() string {

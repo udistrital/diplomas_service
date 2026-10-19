@@ -28,7 +28,7 @@ La imagen recibida se normaliza antes de almacenar: se quita fondo claro, se con
 ```shell
 DIPLOMAS_MID_HTTP_PORT=8090
 FIRMA_ELECTRONICA_MID_URL=http://localhost:8080/api
-DIPLOMAS_CRUD_URL=http://localhost:8081/v1
+DIPLOMAS_CRUD_URL=http://localhost:8081
 ADMINISTRATIVA_AMAZON_API_URL=${ADMINISTRATIVA_AMAZON_API_URL}
 DOCUMENTOS_CRUD_GESTOR_DOCUMENTAL_URL=${DOCUMENTOS_CRUD_GESTOR_DOCUMENTAL_URL}
 AWS_REGION=us-east-1
@@ -39,73 +39,6 @@ DIPLOMAS_S3_BUCKET=diplomas-digital-local
 ```
 
 Si corre en Docker y consume servicios del host, usar `host.docker.internal` en las URLs.
-
-## Payload
-
-Firma de diploma:
-
-```json
-{
-  "nombre": "Diploma digital",
-  "descripcion": "Firma de diploma digital con QR",
-  "documento_identidad_firmante": 10000000,
-  "metadatos": {
-    "codigo_estudiante": 10000000001,
-    "programa_academico_id": 85,
-    "periodo_id": 20261,
-    "vigencia": 2026,
-    "tipo_documento": "diploma"
-  },
-  "representantes": [],
-  "file": "BASE64_DEL_PDF"
-}
-```
-
-Imagen PNG de firma del firmante:
-
-```json
-{
-  "documento_identidad_firmante": 10000000,
-  "IdTipoDocumento": 38,
-  "nombre": "firma_diploma",
-  "metadatos": {
-    "vigencia": "2026"
-  },
-  "descripcion": "firma diploma 2026",
-  "file": "BASE64_DEL_PNG"
-}
-```
-
-`file` tambien acepta data URI, por ejemplo `data:image/png;base64,...`.
-
-## Respuesta
-
-```json
-{
-  "firma_id": "uuid-firma",
-  "repositorio_documental": "diplomas",
-  "documento_id": 156103,
-  "uuid_documento": "uuid-documento",
-  "firmante": {
-    "rol": "secretario_academico",
-    "orden": 1,
-    "cargo_id": 158,
-    "cargo": "SECRETARIO ACADEMICO FACULTAD DE CIENCIAS Y EDUCACION",
-    "nombre": "NOMBRE FIRMANTE",
-    "documento_identidad": 10000000
-  },
-  "s3": {
-    "bucket": "diplomas-digital-local",
-    "key": "diplomas/uuid-documento/diploma.pdf",
-    "uri": "s3://diplomas-digital-local/diplomas/uuid-documento/diploma.pdf"
-  },
-  "dynamodb": {
-    "table": "firma_electronica",
-    "firma_id": "uuid-firma",
-    "sk": "repositorio_documental#diplomas#documento_id#156103"
-  }
-}
-```
 
 ## Ejecucion
 

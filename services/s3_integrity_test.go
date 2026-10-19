@@ -30,6 +30,9 @@ func TestS3FinalBytesChecksumVersionAndNoOverwrite(t *testing.T) {
 		if string(body) != string(finalPDF) || r.Header.Get("Content-Type") != "application/pdf" {
 			t.Error("final document bytes changed in transport")
 		}
+		if got := r.Header.Get("Content-Disposition"); got != `attachment; filename="Diploma.pdf"` {
+			t.Errorf("unexpected download filename: %q", got)
+		}
 		if r.Header.Get("X-Amz-Checksum-Sha256") != base64.StdEncoding.EncodeToString(digest[:]) || r.Header.Get("If-None-Match") != "*" {
 			t.Error("missing checksum or overwrite precondition")
 		}
@@ -64,5 +67,11 @@ func TestS3FinalBytesChecksumVersionAndNoOverwrite(t *testing.T) {
 	}
 	if _, err := (S3Service{}).PutDiploma(context.Background(), "new-uuid", "Diploma.pdf", encoded); err == nil {
 		t.Fatal("must reject overwrite; no deletion or retention bypass")
+	}
+}
+
+func TestNombreDescargaSeguroEliminaRutaSinCambiarClaveS3(t *testing.T) {
+	if got := nombreDescargaSeguro("diplomas/uuid/20261008_Diploma_20181016035.pdf"); got != "20261008_Diploma_20181016035.pdf" {
+		t.Fatalf("nombreDescargaSeguro() = %q", got)
 	}
 }
