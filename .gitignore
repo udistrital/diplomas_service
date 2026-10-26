@@ -36,3 +36,6 @@ swagger/**
 
 # Editor/IDE
 .vscode/
+
+# Dependencias de Chromium preparadas para Docker
+runtime/
