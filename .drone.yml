@@ -1,0 +1,123 @@
+kind: pipeline
+type: docker
+name: oati_golang_api_ci
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  base: /go
+  path: src/github.com/${DRONE_REPO}
+
+trigger:
+  branch:
+    - feat/*
+    - feature/*
+    - develop
+    - release/*
+    - hotfix/*
+    - master
+  event:
+    - push
+    - pull_request
+
+steps:
+  - name: go_run_test
+    image: golang:1.25-bookworm
+    commands:
+      - test -z "$(gofmt -l $(git ls-files '*.go'))"
+      - go vet ./...
+      - go test -coverprofile=coverage.out ./...
+
+  - name: run_sonar_scanner
+    image: sonarsource/sonar-scanner-cli:latest
+    environment:
+      SONAR_HOST_URL:
+        from_secret: SONAR_HOST
+      SONAR_TOKEN:
+        from_secret: SONAR_TOKEN
+      SONAR_SCANNER_OPTS: "-Dsonar.working.directory=/tmp/.scannerwork"
+    commands:
+      - sonar-scanner
+    when:
+      event:
+        - push
+
+  - name: build
+    image: golang:1.25-bookworm
+    commands:
+      - apt-get update
+      - apt-get install -y --no-install-recommends chromium
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main .
+      - sh scripts/prepare-chromium-runtime.sh
+
+  - name: publish_to_ecr_release
+    image: plugins/ecr:20.18.8
+    settings:
+      access_key:
+        from_secret: AWS_ACCESS_KEY_ID
+      secret_key:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      region:
+        from_secret: AWS_REGION
+      create_repository: true
+      repo: ${DRONE_REPO_NAME}
+      tags:
+        - ${DRONE_COMMIT:0:7}
+        - release
+    when:
+      branch:
+        - release/*
+      event:
+        - push
+
+  - name: publish_to_ecr_prod
+    image: plugins/ecr:20.18.8
+    settings:
+      access_key:
+        from_secret: AWS_ACCESS_KEY_ID
+      secret_key:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      region:
+        from_secret: AWS_REGION
+      create_repository: true
+      repo: ${DRONE_REPO_NAME}
+      tags:
+        - ${DRONE_COMMIT:0:7}
+        - latest
+    when:
+      branch:
+        - master
+      event:
+        - push
+
+  - name: update_ecs_service
+    image: amazon/aws-cli:latest
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      AWS_DEFAULT_REGION:
+        from_secret: AWS_REGION
+    commands:
+      - |
+        case "${DRONE_BRANCH}" in
+          master)
+            SUFFIX=prod
+            CLUSTER=oas
+            ;;
+          *)
+            SUFFIX=test
+            CLUSTER=test
+            ;;
+        esac
+        aws ecs update-service --cluster "$${CLUSTER}" --service "${DRONE_REPO_NAME}_$${SUFFIX}" --force-new-deployment --query "service.deployments[0].id"
+        aws ecs wait services-stable --cluster "$${CLUSTER}" --services "${DRONE_REPO_NAME}_$${SUFFIX}"
+    when:
+      branch:
+        - release/*
+        - master
+      event:
+        - push
